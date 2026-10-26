@@ -1,0 +1,70 @@
+:root{--brand:#0094C6;--fg:#f4f4f4;--mute:#9a9a9a;--line:rgba(255,255,255,.14)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#000;color:var(--fg);font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+html.entering{overscroll-behavior:none}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* subtle background grid: faint lines, brand blue glow around the cursor */
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;--mx:-999px;--my:-999px;
+  background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+  background-size:56px 56px;background-position:var(--gx,0px) var(--gy,0px)}
+.bg-grid::after{content:"";position:absolute;inset:0;opacity:.55;
+  background-image:linear-gradient(rgba(0,148,198,.6) 1px,transparent 1px),linear-gradient(90deg,rgba(0,148,198,.6) 1px,transparent 1px);
+  background-size:inherit;background-position:inherit;
+  -webkit-mask:radial-gradient(260px circle at var(--mx) var(--my),#000,transparent 70%);mask:radial-gradient(260px circle at var(--mx) var(--my),#000,transparent 70%)}
+
+/* white loader page under the ring; fades out while the cards keep moving */
+.backdrop{position:fixed;inset:0;background:#fff;z-index:0}
+
+/* ── ring: shared values arrive as CSS variables on .ring ── */
+.ring{position:fixed;inset:0;z-index:1;perspective:var(--p,1000px);overflow:hidden;cursor:grab;touch-action:none;user-select:none}
+.ring.drag{cursor:grabbing}
+/* the wrappers are flat planes in front of the far cards: let clicks pass through to the cards */
+.roll{position:absolute;inset:0;transform:rotate(var(--roll,0deg));transform-style:preserve-3d;pointer-events:none}
+.cyl{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d;pointer-events:none;
+  transform:translateZ(var(--camz,0px)) rotateX(var(--tilt,0deg))}
+.card{position:absolute;left:-135px;top:-240px;width:270px;height:480px;border-radius:24px;overflow:hidden;background:#111;
+  opacity:0;visibility:hidden;will-change:transform,opacity;pointer-events:auto;backface-visibility:visible;
+  box-shadow:0 0 0 1px rgba(255,255,255,.22) inset,0 24px 60px rgba(0,0,0,.45);transition:filter .3s}
+.card img,.card video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.card::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(165deg,rgba(255,255,255,.3),rgba(255,255,255,0) 30%);
+  box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.4),inset 0 0 0 8px rgba(255,255,255,.07)}
+.card.hot{filter:brightness(1.15) saturate(1.1)}
+.card:focus-visible{outline:3px solid var(--brand);outline-offset:4px}
+
+/* ── header wordmark (also the loader's brand word) ── */
+.top{position:fixed;top:20px;left:28px;z-index:6;height:40px;display:flex;align-items:center;pointer-events:none}
+.brand{pointer-events:auto;font:500 24px Manrope,system-ui,sans-serif;letter-spacing:-.02em;white-space:nowrap;transform-origin:0 50%}
+.brand i{font-style:normal;color:var(--brand)}
+
+/* ── chrome: frame, nav ── */
+.frame{position:fixed;inset:14px;z-index:2;border:1px solid var(--line);border-radius:26px;pointer-events:none}
+/* bottom menu, same as the homepage */
+.dock{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:4px;padding:6px;border-radius:999px;
+  background:rgba(30,30,30,.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 0 0 1px rgba(255,255,255,.12),0 10px 30px rgba(0,0,0,.5)}
+.dock a{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;font-size:13px;font-weight:500;white-space:nowrap;transition:background .2s}
+.dock a.on{background:rgba(255,255,255,.12)}
+.dock a:hover{background:var(--brand);color:#fff}
+.dock svg{width:14px;height:14px}
+
+/* ── loader ── */
+.loader{position:fixed;inset:0;z-index:4;pointer-events:none;color:#111}
+.skip{pointer-events:auto;position:fixed;left:28px;bottom:32px;padding:10px 18px;border-radius:999px;background:rgba(0,0,0,.06);font-size:14px;font-weight:600}
+.skip:hover{background:rgba(0,0,0,.12)}
+.skip:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+.meter{position:fixed;right:28px;bottom:20px;text-align:right}
+.scramble{display:block;font:500 13px/1 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.18em;text-transform:uppercase;color:#777;margin-bottom:6px}
+.counter{display:flex;justify-content:flex-end;font:500 clamp(84px,13vw,190px)/1 "JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+.digit{display:inline-block;height:1em;overflow:hidden}
+.strip{display:flex;flex-direction:column;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.strip span{height:1em;display:block}
+
+@media (max-width:640px){
+  .top{left:18px;top:16px}.brand{font-size:20px}
+  .dock a span{display:none}.dock a{padding:12px}
+  .frame{inset:8px;border-radius:18px}
+  .skip{left:18px;bottom:22px}.meter{right:18px;bottom:14px}
+}

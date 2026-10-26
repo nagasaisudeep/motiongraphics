@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sudeep Mannava | Motion Designer</title>
+<link rel="icon" href="favicon-dark.png" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="favicon-light.png" media="(prefers-color-scheme: light)">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--brand:#0094C6;--bg:#000;--fg:#f4f4f4;--mute:#8d8d8d;--glass:rgba(30,30,30,.72);--line:rgba(255,255,255,.12)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--fg);font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* logo */
+.top{position:fixed;top:20px;left:24px;right:24px;z-index:45;height:40px;display:flex;align-items:center;justify-content:space-between;pointer-events:none;transition:left .6s cubic-bezier(.2,.8,.2,1),right .6s cubic-bezier(.2,.8,.2,1)}
+/* inside a video: name sits over the player's left edge, Back over the suggestions' right edge */
+.top.in{left:var(--edge);right:var(--edge)}
+.top > *{pointer-events:auto}
+.logo{font:500 24px Manrope,system-ui,sans-serif;letter-spacing:-.02em;color:#fff;white-space:nowrap}
+.back{height:40px;padding:0 20px;line-height:40px;border-radius:999px;background:rgba(255,255,255,.1);font-size:15px;font-weight:600;
+  opacity:0;transform:translateX(8px);pointer-events:none;transition:opacity .3s,transform .3s,background .2s}
+.back.show{opacity:1;transform:none;pointer-events:auto}
+.back:hover{background:rgba(255,255,255,.2)}
+.logo i{font-style:normal;color:var(--brand)}
+
+/* side badge */
+.badge{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:20;background:#e8e8e8;color:#000;padding:10px 8px;border-radius:0 6px 6px 0;display:flex;flex-direction:column;align-items:center;gap:14px;font-size:11px;font-weight:600}
+.badge b{font-size:16px}
+.badge span{writing-mode:vertical-rl;transform:rotate(180deg)}
+
+/* intro */
+.intro{position:fixed;inset:0;z-index:15;display:grid;place-items:center;pointer-events:none;transition:opacity .8s}
+.intro h1{font-size:clamp(28px,4vw,56px);font-weight:600;letter-spacing:-.04em;text-align:center;line-height:1.05}
+.intro p{color:var(--mute);text-align:center;margin-top:14px;font-size:14px}
+.intro.gone{opacity:0}
+
+/* wall */
+/* subtle background grid: faint lines, brand blue glow around the cursor */
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;--mx:-999px;--my:-999px;
+  background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+  background-size:56px 56px;background-position:var(--gx,0px) var(--gy,0px)}
+.bg-grid::after{content:"";position:absolute;inset:0;opacity:.55;
+  background-image:linear-gradient(rgba(0,148,198,.6) 1px,transparent 1px),linear-gradient(90deg,rgba(0,148,198,.6) 1px,transparent 1px);
+  background-size:inherit;background-position:inherit;
+  -webkit-mask:radial-gradient(260px circle at var(--mx) var(--my),#000,transparent 70%);mask:radial-gradient(260px circle at var(--mx) var(--my),#000,transparent 70%)}
+#wall{position:fixed;inset:0;perspective:1400px;cursor:grab;touch-action:none}
+#wall.drag{cursor:grabbing}
+.tile{position:absolute;left:0;top:0;border-radius:26px;overflow:hidden;will-change:transform;background:#111;
+  box-shadow:0 0 0 1px rgba(255,255,255,.18) inset,0 20px 50px rgba(0,0,0,.6)}
+.tile canvas{display:block;width:100%;height:100%}
+.tile .t{position:absolute;left:20px;bottom:18px;right:20px;z-index:4;text-shadow:0 1px 10px rgba(0,0,0,.5);pointer-events:none}
+.tile h3{font-size:22px;font-weight:600;letter-spacing:-.02em}
+.tile small{display:block;font-size:11px;color:rgba(255,255,255,.7);margin-top:4px}
+
+/* ── globe loader ── */
+html.loading #wall,html.from-reels #wall,html.from-reels .intro{visibility:hidden}
+html.loader-ui .dock{opacity:0;transform:translate(-50%,24px);pointer-events:none}
+html.loading .intro{opacity:0}
+html.loader-ui .logo{transform:translateY(14px) scale(1.7)}
+html.loading .top{z-index:70}
+.logo{transform-origin:0 50%;transition:transform 1.1s cubic-bezier(.65,0,.25,1)}
+#loader{position:fixed;inset:0;z-index:60;background:#000;transition:background .9s}
+#loader.out{background:rgba(0,0,0,0);pointer-events:none}
+.g-stage{position:absolute;inset:0;perspective:1200px;display:grid;place-items:center;pointer-events:none}
+.globe{position:relative;width:0;height:0;transform-style:preserve-3d}
+.gcard{position:absolute;width:96px;height:62px;left:-48px;top:-31px;border-radius:10px;background:#111 center/cover;backface-visibility:hidden;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.35),0 6px 18px rgba(0,0,0,.4);opacity:0;transform:scale(.1);
+  transition:transform 1.2s cubic-bezier(.2,.8,.2,1),opacity .6s}
+.ld-meter{position:absolute;right:28px;bottom:20px;text-align:right;transition:opacity .4s}
+.ld-cap{position:absolute;top:32px;right:28px;font:500 13px/1 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.18em;color:#8a8a8a;transition:opacity .4s}
+.ld-count{display:flex;justify-content:flex-end;font:500 clamp(84px,13vw,190px)/1 "JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+.ld-count .digit{display:inline-block;height:1em;overflow:hidden}
+.ld-count .strip{display:flex;flex-direction:column;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.ld-count .strip span{display:block;height:1em}
+.ld-skip{position:absolute;left:28px;bottom:32px;padding:10px 18px;border-radius:999px;background:rgba(255,255,255,.1);font-size:14px;font-weight:600;transition:opacity .4s,background .2s}
+.ld-skip:hover{background:rgba(255,255,255,.2)}
+#loader.out .ld-meter,#loader.out .ld-skip,#loader.out .ld-cap{opacity:0}
+/* cards leaving the globe for their wall tiles; same perspective as #wall so they land exactly */
+.flyers{position:fixed;inset:0;z-index:61;perspective:1400px;pointer-events:none}
+.flyer{position:absolute;left:0;top:0;border-radius:26px;background:#111 center/cover;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.3)}
+@media (max-width:640px){.ld-cap{top:24px;right:18px}.ld-meter{right:18px;bottom:14px}.ld-skip{left:18px;bottom:22px}.gcard{width:62px;height:40px;left:-31px;top:-20px;border-radius:7px}}
+
+/* glass rim: bright edge with a soft iridescent sheen, like thick glass */
+.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;z-index:3;pointer-events:none;
+  background:conic-gradient(from 210deg,rgba(255,255,255,.95),rgba(140,210,255,.55),rgba(255,140,220,.45),rgba(255,255,255,.15) 40%,rgba(255,235,150,.5),rgba(150,255,220,.4),rgba(255,255,255,.95));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.glass::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:2;
+  background:linear-gradient(165deg,rgba(255,255,255,.32),rgba(255,255,255,.06) 22%,rgba(255,255,255,0) 40%),linear-gradient(0deg,rgba(0,0,0,.72),rgba(0,0,0,.25) 38%,rgba(0,0,0,0) 60%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.35),inset 0 0 0 9px rgba(255,255,255,.07),inset 0 10px 22px rgba(255,255,255,.22),inset 0 -14px 26px rgba(0,0,0,.45),inset 0 0 40px rgba(255,255,255,.08)}
+
+/* dock */
+.dock{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:50;transition:opacity .7s .35s,transform .7s .35s;display:flex;gap:4px;padding:6px;border-radius:999px;
+  background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 0 0 1px var(--line),0 10px 30px rgba(0,0,0,.5)}
+.dock button,.dock a{color:inherit;text-decoration:none;display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;font-size:13px;font-weight:500;white-space:nowrap;transition:background .2s}
+.dock button.on{background:rgba(255,255,255,.12)}
+.dock [hidden]{display:none}
+.dock button:hover,.dock a:hover{background:var(--brand);color:#fff}
+.dock svg{width:14px;height:14px}
+
+/* panel */
+.panel{position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.6);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  opacity:0;pointer-events:none;transition:opacity .4s;overflow:auto}
+.panel.open{opacity:1;pointer-events:auto}
+.panel .in{max-width:760px;margin:0 auto;padding:110px 20px 140px}
+.panel h2{font-size:clamp(32px,5vw,56px);font-weight:600;letter-spacing:-.04em;margin-bottom:28px}
+.panel p{color:#cfcfcf;line-height:1.6;font-size:17px;margin-bottom:18px}
+.row{display:grid;grid-template-columns:120px 1fr;gap:20px;padding:18px 0;border-top:1px solid var(--line)}
+.row span{color:var(--mute);font-size:14px}
+.row b{font-weight:500}
+.row em{display:block;font-style:normal;color:var(--mute);font-size:14px;margin-top:4px}
+.panel a.mail{display:inline-block;font-size:clamp(28px,5vw,48px);font-weight:600;letter-spacing:-.03em;color:var(--fg);text-decoration:none;border-bottom:2px solid}
+.soc{display:flex;gap:18px;margin-top:30px}.soc a{color:var(--mute);text-decoration:none}.soc a:hover{color:var(--fg)}
+
+/* lightbox */
+/* contact: gradient card + icon row (Noku layout) */
+.contact-panel .cwrap{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:90px 20px 120px}
+.ccard{position:relative;isolation:isolate;width:min(300px,78vw);aspect-ratio:3/4.1;border-radius:40px;overflow:hidden;padding:22px 24px 26px;display:flex;flex-direction:column;justify-content:space-between;
+  box-shadow:0 30px 80px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.18);transform:translateY(16px) scale(.95);opacity:0;transition:transform .6s cubic-bezier(.2,.8,.2,1),opacity .4s}
+.panel.open .ccard{transform:none;opacity:1}
+.ccard::before{content:"";position:absolute;inset:-35%;z-index:-1;filter:blur(34px);animation:cflow 14s ease-in-out infinite alternate;
+  background:radial-gradient(40% 40% at 22% 28%,#7fe0ff,transparent 70%),radial-gradient(42% 42% at 80% 18%,#b48cff,transparent 70%),
+    radial-gradient(50% 50% at 72% 78%,#0094C6,transparent 70%),radial-gradient(45% 45% at 18% 86%,#ff8fd6,transparent 70%),#2b46ff}
+@keyframes cflow{to{transform:rotate(28deg) scale(1.18)}}
+.cpill{align-self:flex-start;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.22);backdrop-filter:blur(8px);font-size:13px;font-weight:500}
+.contact-panel .ccard h2{font-size:26px;font-weight:500;letter-spacing:-.02em;margin:0 0 6px;line-height:1.15}
+.ccard a{color:rgba(255,255,255,.85);font-size:15px;text-decoration:none}.ccard a:hover{color:#fff}
+.cacts{display:flex;align-items:center;gap:10px;padding:6px;border-radius:20px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px var(--line);
+  transform:translateY(12px);opacity:0;transition:transform .6s .12s cubic-bezier(.2,.8,.2,1),opacity .4s .12s}
+.panel.open .cacts{transform:none;opacity:1}
+.cicon{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;transition:transform .2s,background .2s}
+.cicon svg{width:22px;height:22px}
+.cicon:hover{transform:translateY(-2px)}
+.cicon.c-mail{color:#5fd0f5;background:rgba(0,148,198,.16);box-shadow:inset 0 0 0 1px rgba(0,148,198,.65)}
+.cicon.c-in{color:#6fb1ff;background:rgba(10,102,194,.18);box-shadow:inset 0 0 0 1px rgba(10,102,194,.75)}
+.cicon.c-wa{color:#5be38a;background:rgba(37,211,102,.14);box-shadow:inset 0 0 0 1px rgba(37,211,102,.6)}
+.ccall{height:46px;padding:0 20px;border-radius:14px;display:grid;place-items:center;background:#fff;color:#000;font-size:15px;font-weight:600;text-decoration:none;transition:background .2s,color .2s}
+.ccall:hover{background:var(--brand);color:#fff}
+
+/* about: bento grid (Noku layout) */
+.about-panel .bento{max-width:1060px;margin:0 auto;padding:96px 20px 130px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(190px,auto);gap:16px}
+.bx{position:relative;isolation:isolate;overflow:hidden;border-radius:28px;background:#111;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);padding:22px;
+  display:flex;flex-direction:column;justify-content:space-between;gap:16px;text-align:left;color:var(--fg);
+  opacity:0;transform:translateY(18px);transition:opacity .5s,transform .6s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+.panel.open .bx{opacity:1;transform:none}
+.panel.open .bx:nth-child(2){transition-delay:.05s}.panel.open .bx:nth-child(3){transition-delay:.1s}.panel.open .bx:nth-child(4){transition-delay:.15s}
+.panel.open .bx:nth-child(5){transition-delay:.2s}.panel.open .bx:nth-child(6){transition-delay:.25s}.panel.open .bx:nth-child(7){transition-delay:.3s}.panel.open .bx:nth-child(8){transition-delay:.35s}
+button.bx{cursor:pointer}button.bx:hover{box-shadow:inset 0 0 0 1px var(--brand)}
+.bx .tag{align-self:flex-start;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.08);font-size:12px;font-weight:500}
+.bx h3{font-size:22px;font-weight:500;letter-spacing:-.02em;line-height:1.2}
+.bx small{display:block;margin-top:6px;color:var(--mute);font-size:13px;line-height:1.5}
+.b-profile{grid-column:span 2;grid-row:span 2}
+.who{display:flex;align-items:center;gap:12px}
+.who img{width:48px;height:48px;border-radius:14px;object-fit:cover}
+.who b{display:block;font-size:18px;font-weight:500}.who small{margin-top:0}
+.pitch{font-size:clamp(22px,2.4vw,30px);line-height:1.25;letter-spacing:-.02em;color:#e9e9e9;margin:0}
+.avail{align-self:flex-start;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.08);font-size:13px}
+.avail i{width:8px;height:8px;border-radius:50%;background:#3ddc84;box-shadow:0 0 0 0 rgba(61,220,132,.6);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 8px rgba(61,220,132,0)}100%{box-shadow:0 0 0 0 rgba(61,220,132,0)}}
+.b-work{grid-column:span 2}
+.b-work .peek{position:absolute;right:-30px;top:26px;width:58%;border-radius:14px;z-index:-1;opacity:.9;transform:rotate(-4deg);
+  box-shadow:0 20px 50px rgba(0,0,0,.6);-webkit-mask:linear-gradient(90deg,transparent,#000 30%);mask:linear-gradient(90deg,transparent,#000 30%);transition:transform .5s}
+.b-work:hover .peek{transform:rotate(-2deg) translateY(-4px)}
+.tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tools span{padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.06);font-size:12px;color:#cfcfcf}
+.elsewhere{display:grid;grid-template-columns:repeat(2,46px);gap:10px;align-self:center;margin:auto 0}
+.cicon.c-reel{color:#fff;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.b-contact{justify-content:space-between;box-shadow:none}
+.b-contact::before{content:"";position:absolute;inset:-35%;z-index:-1;filter:blur(30px);animation:cflow 14s ease-in-out infinite alternate;
+  background:radial-gradient(40% 40% at 22% 28%,#7fe0ff,transparent 70%),radial-gradient(42% 42% at 80% 18%,#b48cff,transparent 70%),
+    radial-gradient(50% 50% at 72% 78%,#0094C6,transparent 70%),radial-gradient(45% 45% at 18% 86%,#ff8fd6,transparent 70%),#2b46ff}
+.b-contact .tag{background:rgba(255,255,255,.22)}
+.b-contact h3{font-size:26px;color:#fff}
+@media (max-width:900px){
+  .about-panel .bento{grid-template-columns:repeat(2,minmax(0,1fr));padding:80px 16px 120px;gap:12px}
+  .b-profile,.b-work{grid-column:span 2}.b-profile{grid-row:auto}
+}
+
+/* project viewer */
+:root{--side:clamp(320px,28vw,420px);--mw:min(calc(100vw - 116px - var(--side)),calc((100vh - 470px) * 16 / 9));--edge:max(24px,calc((100vw - var(--mw) - var(--side) - 36px) / 2))}
+.viewer{position:fixed;inset:0;z-index:40;background:#000;display:grid;grid-template-columns:var(--mw) var(--side);justify-content:center;align-content:center;gap:36px;padding:120px 40px 100px;opacity:0;pointer-events:none;transition:opacity .35s,background .55s}
+.viewer.open{opacity:1;pointer-events:auto}
+.vmain{display:flex;flex-direction:column;min-width:0;min-height:0}
+.frame{position:relative;width:100%;aspect-ratio:16/9;border-radius:38px;overflow:hidden;background:#0d0d0d;transform-origin:0 0;
+  box-shadow:0 0 0 1px rgba(255,255,255,.25),0 30px 80px rgba(0,0,0,.7)}
+.frame video{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
+:root.vertical-view{--side:0px;--mw:min(calc(100vw - 80px),1100px);--edge:max(24px,calc((100vw - var(--mw)) / 2))}
+/* reels: one column, tall player and its info on top, suggestions below (the viewer scrolls) */
+.viewer.vertical{grid-template-columns:var(--mw);grid-auto-rows:max-content;align-content:start;overflow-y:auto}
+/* the reel page scrolls under the top bar: fade it out behind the name and Back */
+:root.vertical-view .top.in::before{content:"";position:fixed;left:0;right:0;top:0;height:96px;background:linear-gradient(#000 55%,rgba(0,0,0,0));z-index:-1;pointer-events:none}
+.viewer.vertical .vside{margin-top:12px;overflow:visible}
+.sarrow{display:none}
+/* reels: one row of 3 suggestions, arrows scroll to the next 3 */
+.viewer.vertical .vside{position:relative}
+.viewer.vertical .sugg{grid-auto-flow:column;grid-auto-columns:calc((100% - 36px) / 3);gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none}
+.viewer.vertical .sugg::-webkit-scrollbar{display:none}
+.viewer.vertical .sg{scroll-snap-align:start}
+.viewer.vertical .sarrow{display:grid;place-items:center;position:absolute;top:calc(50% + 26px);transform:translateY(-50%);z-index:5;width:44px;height:44px;border-radius:50%;
+  background:rgba(30,30,30,.9);box-shadow:0 0 0 1px var(--line),0 6px 18px rgba(0,0,0,.5);transition:background .2s,opacity .2s}
+.viewer.vertical .sarrow:hover{background:var(--brand)}
+.viewer.vertical .sarrow[hidden]{opacity:0;pointer-events:none}
+.viewer.vertical .sarrow svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.viewer.vertical .sarrow.prev{left:-22px}.viewer.vertical .sarrow.next{right:-22px}
+.viewer.vertical .crow{gap:6px}.viewer.vertical .crow .time{font-size:13px;white-space:nowrap}.viewer.vertical .ctrl{padding:50px 18px 16px}
+/* Shorts layout: channel and title bottom left, video centre, Share as a round button on the right */
+.viewer.vertical .vmain{display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:1fr auto auto;column-gap:28px;align-items:end}
+.viewer.vertical .frame{grid-column:2;grid-row:1 / span 3;width:auto;height:calc(100vh - 230px);aspect-ratio:9/16;border-radius:32px}
+.viewer.vertical .vinfo,.viewer.vertical .vrow,.viewer.vertical .acts{display:contents}
+.viewer.vertical .ch{grid-column:1;grid-row:2;justify-self:start;margin-bottom:12px}
+.viewer.vertical .vt{grid-column:1;grid-row:3;font-size:24px;max-width:360px;margin-bottom:6px}
+.viewer.vertical .vdesc{display:none}
+.viewer.vertical .acts .share{grid-column:3;grid-row:2 / span 2;align-self:end;justify-self:start;flex-direction:column;height:auto;gap:8px;padding:0;background:none;font-size:14px;font-weight:600}
+.viewer.vertical .acts .share svg{width:56px;height:56px;padding:17px;border-radius:50%;background:rgba(255,255,255,.12);transition:background .2s}
+.viewer.vertical .acts .share:hover svg{background:var(--brand)}
+.frame:fullscreen{border-radius:0}.frame:fullscreen video{object-fit:contain;background:#000}
+.ctrl{position:absolute;left:0;right:0;bottom:0;z-index:5;padding:60px 34px 22px;background:linear-gradient(0deg,rgba(0,0,0,.55),rgba(0,0,0,0));transition:opacity .4s}
+.frame.idle .ctrl{opacity:0}.frame.idle{cursor:none}
+.bar{position:relative;height:4px;border-radius:4px;background:rgba(255,255,255,.28);cursor:pointer;margin-bottom:16px;transition:height .2s}
+.bar:hover{height:7px}
+.bar .buf,.bar .fill{position:absolute;left:0;top:0;bottom:0;border-radius:inherit;width:0}
+.bar .buf{background:rgba(255,255,255,.3)}.bar .fill{background:#fff}
+.bar .fill i{position:absolute;right:-7px;top:50%;width:14px;height:14px;margin-top:-7px;border-radius:50%;background:#fff;transform:scale(0);transition:transform .2s}
+.bar:hover .fill i{transform:scale(1)}
+.crow{display:flex;align-items:center;gap:18px}
+.crow button{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;transition:background .2s}
+.crow button:hover{background:rgba(255,255,255,.14)}
+.crow svg{width:22px;height:22px;fill:#fff;color:#fff}
+.crow .time{font-variant-numeric:tabular-nums;font-size:16px;font-weight:500;letter-spacing:.02em}.crow .time em{font-style:normal;opacity:.5;margin:0 6px}
+/* volume: slider slides out from the speaker icon on hover, like YouTube */
+.vol{display:flex;align-items:center;margin-left:auto}
+.vbar{position:relative;width:0;height:4px;margin:0;border-radius:4px;background:rgba(255,255,255,.3);cursor:pointer;opacity:0;transition:width .25s,margin .25s,opacity .25s}
+.vol:hover .vbar,.vol.drag .vbar,.vbar:focus-visible{width:84px;margin:0 10px 0 6px;opacity:1}
+.vbar::before{content:"";position:absolute;inset:-10px 0}
+.vfill{position:absolute;left:0;top:0;bottom:0;border-radius:inherit;background:#fff;width:100%}
+.vfill i{position:absolute;right:-6px;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;background:#fff}
+.pp .i-pause,.frame.playing .pp .i-play,.mute .i-off,.frame.muted .mute .i-on{display:none}
+.frame.playing .pp .i-pause,.frame.muted .mute .i-off{display:inline}
+.vinfo{margin-top:22px;width:100%}
+.vt{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.vrow{display:flex;align-items:center;gap:14px;margin-top:14px}
+.ch{display:flex;align-items:center;gap:12px;min-width:0}
+.av{width:46px;height:46px;flex:none;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:#fff;font:800 15px Manrope;color:#fff}
+.av img{width:72%;height:72%;object-fit:contain}
+.av.dark{background:#141414;box-shadow:0 0 0 1px var(--line)}
+.av.mono{background:radial-gradient(circle at 30% 25%,#4fa3ff,#0a5bd8 60%,#062f73)}
+.ch b em{font-style:normal}
+.vdesc{margin-top:16px;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.07);color:#d6d6d6;font-size:15px;line-height:1.55;max-width:100%}
+.ch b{display:flex;align-items:center;gap:6px;font-size:17px;font-weight:600;white-space:nowrap}
+.ch b svg{width:15px;height:15px;flex:none}
+.ch span{display:block;color:var(--mute);font-size:13px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acts{display:flex;align-items:center;gap:8px;margin-left:auto;flex:none}
+.acts button{height:40px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;font-size:15px;font-weight:600;transition:background .2s}
+.acts .pill{padding:0 16px;background:rgba(255,255,255,.1)}
+.acts button:hover{background:rgba(255,255,255,.2)}
+.acts svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.acts .on svg{fill:#fff}
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);z-index:60;padding:12px 20px;border-radius:12px;background:#fff;color:#000;font-size:14px;font-weight:600;opacity:0;transition:.3s;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.vside{min-height:0;overflow:auto;margin-top:-30px}
+/* scrolling still works, without a visible scrollbar */
+.viewer,.vside,.chips{scrollbar-width:none}
+.viewer::-webkit-scrollbar,.vside::-webkit-scrollbar,.chips::-webkit-scrollbar{display:none}
+.vside small{display:block;color:var(--mute);letter-spacing:.14em;font-size:15px;font-weight:600;margin-bottom:14px}
+.chips{display:flex;gap:10px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
+.chips button{flex:none;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,.1);font-size:14px;font-weight:600;transition:background .2s,color .2s}
+.chips button:hover{background:rgba(255,255,255,.2)}
+.chips button.on{background:#fff;color:#000}
+.sugg{display:grid;gap:6px}
+/* YouTube style row: thumbnail left, title and channel right */
+.sg{display:flex;gap:12px;padding:6px;margin:0 -6px;border-radius:14px;cursor:pointer;transition:background .2s}
+.sg:hover{background:rgba(255,255,255,.08)}
+.sg .th{position:relative;flex:none;width:52%;max-width:190px;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#111}
+.sg .th video{width:100%;height:100%;object-fit:cover;display:block}
+.sg .th.glass::after{background:linear-gradient(165deg,rgba(255,255,255,.25),rgba(255,255,255,0) 40%)}
+.sg .dur{position:absolute;right:6px;bottom:6px;z-index:4;padding:2px 6px;border-radius:5px;background:rgba(0,0,0,.8);font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.sg .tx{min-width:0;padding-top:2px}
+.sg h4{font-size:15px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.sg .co{display:flex;align-items:center;gap:5px;margin-top:6px;color:var(--mute);font-size:13px;white-space:nowrap}
+.sg .co svg{width:13px;height:13px;flex:none}
+/* staggered entrance */
+.vinfo,.vside small,.sg{opacity:0;transform:translateY(18px);transition:opacity .5s,transform .6s cubic-bezier(.2,.8,.2,1)}
+.viewer.open .vinfo,.viewer.open .vside small,.viewer.open .sg{opacity:1;transform:none}
+.viewer.open .vinfo{transition-delay:.35s}.viewer.open .vside small{transition-delay:.3s}
+.viewer.open .sg:nth-child(1){transition-delay:.38s}.viewer.open .sg:nth-child(2){transition-delay:.46s}.viewer.open .sg:nth-child(3){transition-delay:.54s}
+/* closing: everything but the player fades, background clears to reveal the wall */
+.viewer.open.closing{background:rgba(0,0,0,0);pointer-events:none}
+.viewer.open.closing .vinfo,.viewer.open.closing .vside small,.viewer.open.closing .sg{opacity:0;transform:none;transition:opacity .22s;transition-delay:0s}
+@media (max-width:900px){
+  .top.in{left:16px;right:16px}
+  .viewer{grid-template-columns:minmax(0,1fr);justify-content:stretch;padding:130px 16px 110px;overflow:auto;align-content:start;gap:28px}
+  .ctrl{padding:40px 16px 12px}.bar{margin-bottom:8px}.crow{gap:8px}.crow .time{font-size:13px}
+  .frame,.vinfo{width:100%}.frame{border-radius:24px}
+  .viewer.vertical .vmain{display:flex;flex-direction:column;align-items:stretch;gap:0}
+  .viewer.vertical .vinfo{display:block}.viewer.vertical .vrow{display:flex}.viewer.vertical .acts{display:flex}
+  .viewer.vertical .vt{max-width:none;font-size:20px}.viewer.vertical .ch{margin-bottom:0}
+  .viewer.vertical .frame{height:auto;width:min(100%,calc((100vh - 260px) * 9 / 16));margin:0 auto}
+  .viewer.vertical .vinfo{margin-top:22px}
+  .vt{font-size:20px}.vrow{flex-wrap:wrap;gap:12px}.acts{margin-left:0}.vdesc{font-size:14px}
+  .vside{margin-top:0;overflow:visible;min-width:0}
+}
+
+/* kept on-screen (but invisible) so the browser doesn't pause them */
+#src{position:fixed;left:0;top:0;z-index:-1;pointer-events:none;opacity:.01}
+#src video{width:4px;height:4px}
+
+@media (max-width:640px){
+  .dock button span,.dock a span{display:none}.dock button,.dock a{padding:12px}
+  .badge{display:none}
+  .row{grid-template-columns:1fr;gap:4px}
+  .top,.top.in{left:16px;right:16px;top:16px}.logo{font-size:20px}.back{font-size:14px;height:36px;line-height:36px;padding:0 16px}
+  .tile h3{font-size:17px}.tile small{font-size:10px}.tile .t{left:14px;bottom:12px}
+}
+</style>
+</head>
+<body>
+<script>if (new URLSearchParams(location.search).get('from') === 'reels') document.documentElement.classList.add('from-reels');
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches && location.hash.length < 2) document.documentElement.classList.add('loading', 'loader-ui');</script>
+<div id="loader" role="status" aria-label="Loading reels">
+  <div class="g-stage"><div class="globe" id="globe"></div></div>
+  <button class="ld-skip">Skip intro</button>
+  <span class="ld-cap" aria-hidden="true">LOADING</span>
+  <div class="ld-meter" aria-hidden="true">
+    <div class="ld-count">
+      <span class="digit"><span class="strip"></span></span><span class="digit"><span class="strip"></span></span><span class="digit"><span class="strip"></span></span>
+    </div>
+  </div>
+</div>
+
+<header class="top"><div class="logo">Sudeep Mannava<i>.</i></div><button class="back" aria-label="Back to all work">Back</button></header>
+
+<div class="intro" id="intro"><div><h1>Sudeep Mannava<br>Motion Designer</h1><p>Drag to explore</p></div></div>
+
+<div class="bg-grid" aria-hidden="true"></div>
+<div id="wall"></div>
+<div id="src"></div>
+
+<nav class="dock">
+  <button data-p="work"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="4" height="4" rx="1"/><rect x="6" y="1" width="4" height="4" rx="1"/><rect x="11" y="1" width="4" height="4" rx="1"/><rect x="1" y="6" width="4" height="4" rx="1"/><rect x="6" y="6" width="4" height="4" rx="1"/><rect x="11" y="6" width="4" height="4" rx="1"/><rect x="1" y="11" width="4" height="4" rx="1"/><rect x="6" y="11" width="4" height="4" rx="1"/><rect x="11" y="11" width="4" height="4" rx="1"/></svg><span>Work</span></button>
+  <a href="reels.html"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="1.5" width="5" height="13" rx="1.5"/><rect x="9" y="1.5" width="5" height="13" rx="1.5"/></svg><span>Reels</span></a>
+  <button data-p="about"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="5" r="3"/><path d="M2 15c0-3.3 2.7-5 6-5s6 1.7 6 5z"/></svg><span>About</span></button>
+  <button data-p="contact" hidden><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="1.5" y="3" width="13" height="10" rx="2"/><path d="M2 4.5l6 4.5 6-4.5"/></svg><span>Contact</span></button>
+</nav>
+
+<section class="panel about-panel" id="p-about"><div class="bento">
+  <div class="bx b-profile">
+    <div class="who"><img src="images/avatar.jpg" alt="Sudeep Mannava"><div><b>Sudeep Mannava</b><small>Motion Designer</small></div></div>
+    <p class="pitch">Motion designer crafting launch films, product walkthroughs and AI video ads for SaaS teams and brands.</p>
+    <span class="avail"><i></i>Available for new projects</span>
+  </div>
+  <div class="bx"><span class="tag">Experience</span><div><h3>2+ yrs</h3><small>Product design and motion</small></div></div>
+  <div class="bx"><span class="tag">Location</span><div><h3>India</h3><small>Working remotely, GMT+5:30</small></div></div>
+  <button class="bx b-work" data-go="work"><span class="tag">Work</span><img class="peek" src="videos/covers/reel-1.jpg" alt=""><div><h3>Selected works</h3><small>Product launches, SaaS motion, AI video</small></div></button>
+  <div class="bx"><span class="tag">Tools</span><div><h3>What I work with</h3><div class="tools"><span>After Effects</span><span>Premiere Pro</span><span>Blender</span><span>Figma</span><span>AI video</span></div></div></div>
+  <div class="bx"><span class="tag">Elsewhere</span><div class="elsewhere">
+    <a class="cicon c-in" href="https://www.linkedin.com/in/sudeep-mannava-49bb0a256/" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 9h3v11h-3zM6 3.5a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6zM10 9h2.9v1.5h.1c.4-.8 1.4-1.7 3-1.7 3.2 0 3.8 2.1 3.8 4.8V20h-3v-5.6c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V20h-3z"/></svg></a>
+    <a class="cicon c-wa" href="https://wa.me/917989193704" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20l1.2-3.8A8 8 0 1 1 8 19z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 1c-1-.4-2.6-2-3-3l1-1-1-2z" fill="currentColor" stroke="none"/></svg></a>
+    <a class="cicon c-mail" href="mailto:nagasaisudeep@gmail.com" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></svg></a>
+    <a class="cicon c-reel" href="reels.html" aria-label="Reels"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="3" width="7" height="18" rx="2"/><rect x="13" y="3" width="7" height="18" rx="2"/></svg></a>
+  </div></div>
+  <div class="bx"><span class="tag">About</span><div><h3>The story so far</h3><small>Two years turning complex software into short films people actually watch, now mixing motion design with AI video.</small></div></div>
+  <button class="bx b-contact" data-go="contact"><span class="tag">Contact</span><h3>Let's work together</h3></button>
+</div></section>
+
+<section class="panel" id="p-services"><div class="in">
+  <h2>Services</h2>
+  <div class="row"><span>01</span><div><b>Product Videos</b><em>Launch films and feature walkthroughs that make software feel tangible.</em></div></div>
+  <div class="row"><span>02</span><div><b>UI Animation</b><em>Interface motion, prototypes and App Store previews.</em></div></div>
+  <div class="row"><span>03</span><div><b>Brand Motion</b><em>Logo animations and motion systems that scale.</em></div></div>
+  <div class="row"><span>04</span><div><b>Explainers</b><em>Clear, punchy stories for complex ideas, from script to render.</em></div></div>
+</div></section>
+
+<section class="panel contact-panel" id="p-contact"><div class="cwrap">
+  <div class="ccard">
+    <span class="cpill">Contact</span>
+    <div><h2>Let's work together</h2><a href="mailto:nagasaisudeep@gmail.com">nagasaisudeep@gmail.com</a></div>
+  </div>
+  <div class="cacts">
+    <a class="cicon c-mail" href="mailto:nagasaisudeep@gmail.com" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></svg></a>
+    <a class="cicon c-in" href="https://www.linkedin.com/in/sudeep-mannava-49bb0a256/" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 9h3v11h-3zM6 3.5a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6zM10 9h2.9v1.5h.1c.4-.8 1.4-1.7 3-1.7 3.2 0 3.8 2.1 3.8 4.8V20h-3v-5.6c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V20h-3z"/></svg></a>
+    <a class="cicon c-wa" href="https://wa.me/917989193704" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20l1.2-3.8A8 8 0 1 1 8 19z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 1c-1-.4-2.6-2-3-3l1-1-1-2z" fill="currentColor" stroke="none"/></svg></a>
+    <a class="ccall" href="mailto:nagasaisudeep@gmail.com?subject=Let%27s%20arrange%20a%20call">Arrange a call</a>
+  </div>
+</div></section>
+
+<div class="toast" id="toast"></div>
+<div class="viewer" id="vw">
+  <div class="vmain">
+    <div class="frame glass">
+      <video playsinline controlslist="nodownload noplaybackrate noremoteplayback" disablepictureinpicture disableremoteplayback></video>
+      <div class="ctrl">
+        <div class="bar"><div class="buf"></div><div class="fill"><i></i></div></div>
+        <div class="crow">
+          <button class="pp" aria-label="Play or pause"><svg viewBox="0 0 24 24"><path class="i-play" d="M7 4.5v15l13-7.5z"/><g class="i-pause"><rect x="6" y="4.5" width="4" height="15" rx="1"/><rect x="14" y="4.5" width="4" height="15" rx="1"/></g></svg></button>
+          <span class="time">0:00 <em>/</em> 0:00</span>
+          <div class="vol">
+            <button class="mute" aria-label="Sound"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><g class="i-on" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></g><g class="i-off" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M16 9l5 6M21 9l-5 6"/></g></svg></button>
+            <div class="vbar" role="slider" aria-label="Volume" tabindex="0"><div class="vfill"><i></i></div></div>
+          </div>
+          <button class="fs" aria-label="Fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="vinfo">
+      <h3 class="vt"></h3>
+      <div class="vrow">
+        <div class="ch"><div class="av"></div><div><b><em class="cname"></em> <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#aaa"/><path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></b><span class="vsub"></span></div></div>
+        <div class="acts">
+          <button class="pill share" aria-label="Share"><svg viewBox="0 0 24 24"><path d="M14 4l7 7-7 7v-4c-5 0-8.5 1.5-11 5 1-5 4-10 11-11z"/></svg><span>Share</span></button>
+        </div>
+      </div>
+      <p class="vdesc"></p>
+    </div>
+  </div>
+  <aside class="vside"><div class="chips"><button class="on" data-f="All">All</button><button data-f="AI Videos">AI Videos</button><button data-f="SaaS Motion Graphics">SaaS Motion Graphics</button></div><div class="sugg"></div><button class="sarrow prev" aria-label="Previous videos"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><button class="sarrow next" aria-label="More videos"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></aside>
+</div>
+
+<script>
+/* ── Projects: add more here.
+   src   = full video in videos/ (opens when clicked)
+   clips = start seconds of the 5s preview loops cut into videos/previews/<src>-<n>.mp4
+   Each tile on the wall gets a different clip, so the same project never plays the same moment twice. ── */
+const PROJECTS = [
+  { title: 'AionQ', sub: 'Product launch film', src: 'reel', length: '1:17', clips: [1, 15.1, 29.2, 43.2, 57.3, 71.4],
+    tags: ['SaaS Motion Graphics'], long: 'AionQ Product Launch Film', company: 'AionQ', logo: 'logos/aionq-icon.svg',
+    desc: 'Testing was supposed to protect the business. Instead, it slowed every release down. This launch film introduces AionQ, an AI quality platform that cuts weeks of testing per release and stops bugs before they reach customers.' },
+  { title: 'Paytm Postpaid', sub: 'TV commercial', src: 'paytm-postpaid', length: '0:42', clips: [1, 8, 15, 22, 29, 36],
+    tags: ['AI Videos'], long: 'Paytm Postpaid Commercial', company: 'Paytm', logo: 'logos/paytm-icon.png',
+    desc: 'Board now. Billed later. A cinematic ad for Paytm Postpaid, the buy now pay later credit line that lets people pay for travel, bills and shopping today and settle up next month.' },
+  { title: 'NeuroTerminal', sub: 'Product walkthrough', src: 'neuroterminal', length: '1:00', clips: [1, 11.6, 22.1, 32.7, 43.2, 53.8],
+    tags: ['SaaS Motion Graphics'], long: 'NeuroTerminal Product Walkthrough', company: 'NeuroDiscovery AI', logo: 'logos/neurodiscovery-icon.svg',
+    desc: 'A guided tour of NeuroTerminal by NeuroDiscovery AI. Ask a research question in plain English and it builds a structured patient cohort from millions of anonymised neurology patient journeys, for clinical trials, real world evidence and medical affairs.' },
+  { title: 'FileSyncAI', sub: 'Brand launch film', src: 'filesync', length: '1:18', clips: [1, 15.3, 29.5, 43.8, 58, 72.3],
+    tags: ['SaaS Motion Graphics'], long: 'FileSyncAI Brand Launch Film', company: 'FileSyncAI', mono: 'FS',
+    desc: 'Recruitment, reimagined. Not another ATS. FileSyncAI uses AI agents to run the whole hiring workflow, from job posting and candidate matching to outreach, AI led interviews and real time evaluation.' },
+  { title: 'Turgo', sub: 'Product launch video', src: 'turgo-demo', length: '1:30', clips: [1, 17.5, 34.1, 50.6, 67.2, 83.7],
+    tags: ['SaaS Motion Graphics'], long: 'Turgo Product Launch Video', company: 'Turgo', logo: 'logos/turgo-icon.svg',
+    desc: 'Your next customer should not depend on luck. Turgo is an AI marketing engine for B2B teams that finds buyers showing intent, reaches them across LinkedIn, email and ads, and follows up until a meeting is booked.' },
+  { title: 'Turgo', sub: '30 second social ad', src: 'turgo-30s', length: '0:31', clips: [1, 8.9, 16.8, 24.7],
+    tags: ['SaaS Motion Graphics'], long: 'Turgo 30 Second Social Ad', company: 'Turgo', logo: 'logos/turgo-icon.svg',
+    desc: 'A punchy 30 second cut of the Turgo story made for social feeds: AI agents that find, reach and follow up with buyers so your team only shows up for the meetings.' },
+  // Reels page only: vertical films, opened in this player but kept off the Work wall
+  { title: 'Ajmal Perfumes', sub: 'Vertical AI film', src: 'reels/render-1', key: 'render-1', length: '0:15', clips: [0, 5, 10], reel: true,
+    tags: ['AI Videos'], long: 'Ajmal Perfumes Reel One', company: 'Ajmal Perfumes', logo: 'logos/ajmal.png',
+    desc: 'A cinematic vertical film for Ajmal Perfumes, made for Instagram Reels and Shorts. Golden light, glass and slow motion build a sense of luxury around the fragrance in fifteen seconds.' },
+  { title: 'Ajmal Perfumes', sub: 'Vertical AI film', src: 'reels/render-2', key: 'render-2', length: '0:15', clips: [0, 5, 10], reel: true,
+    tags: ['AI Videos'], long: 'Ajmal Perfumes Reel Two', company: 'Ajmal Perfumes', logo: 'logos/ajmal.png',
+    desc: 'A second vertical cut for Ajmal Perfumes. Rich product close ups and a calm, sensual mood made for social feeds, crafted entirely with AI video tools.' },
+  { title: 'Video Editor Hiring', sub: 'Recruitment reel', src: 'reels/render-3', key: 'render-3', length: '0:21', clips: [0, 6, 12, 16.5], reel: true,
+    tags: ['Social Reels'], long: 'Video Editors Hiring Reel', company: 'Hiring Campaign', mono: 'HR',
+    desc: 'We are hiring video editors. A punchy recruitment reel that opens on a vintage newspaper poster wall and cuts to a talking head explaining the role, built to stop the scroll and drive applications.' },
+];
+// flatten round-robin (clip 0 of every project, then clip 1, …) so neighbouring tiles show different projects
+const CLIPS = [];
+for (let k = 0; k < Math.max(...PROJECTS.map(p => p.clips.length)); k++)
+  for (const p of PROJECTS) if (k < p.clips.length) CLIPS.push({ ...p, start: p.clips[k], preview: `${p.key || p.src}-${k}` });
+
+// one hidden <video> per clip feeds the tile(s) showing it
+const srcBox = document.getElementById('src');
+// clips shown on the Work wall (reels live on the Reels page)
+const WALL = CLIPS.map((c, i) => c.reel ? -1 : i).filter(i => i >= 0);
+const vids = CLIPS.map(p => {
+  const v = document.createElement('video');
+  Object.assign(v, { src: `videos/previews/${p.preview}.mp4`, muted: true, loop: true, playsInline: true, preload: p.reel ? 'none' : 'auto' });
+  srcBox.appendChild(v);
+  return v;
+});
+
+/* ── Wall ── */
+const wall = document.getElementById('wall');
+const DPR = Math.min(devicePixelRatio, 1.5);
+let TW, TH, CW, CH, WW, WH, tiles = [];
+function build() {
+const small = innerWidth < 640, mid = innerWidth < 1100;
+TW = small ? 230 : mid ? 290 : 340; TH = Math.round(TW * .647);
+const GAP = small ? 16 : 26;
+CW = TW + GAP; CH = TH + GAP;
+const COLS = Math.ceil(innerWidth / CW) + 3, ROWS = Math.ceil(innerHeight / CH) + 3;
+WW = COLS * CW; WH = ROWS * CH;
+wall.innerHTML = ''; tiles = [];
+for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+  const i = WALL[(r * 7 + c * 5) % WALL.length];   // steps of 5 and 7 cycle through every project, so neighbours differ
+  const el = document.createElement('div');
+  el.className = 'tile glass'; el.style.width = TW + 'px'; el.style.height = TH + 'px';
+  const cv = document.createElement('canvas'); cv.width = TW * DPR; cv.height = TH * DPR;
+  el.append(cv);
+  el.insertAdjacentHTML('beforeend', `<div class="t"><h3>${CLIPS[i].title}</h3><small>${CLIPS[i].sub}</small></div>`);
+  wall.append(el);
+  tiles.push({ el, ctx: cv.getContext('2d'), i, bx: c * CW, by: r * CH, vis: false });
+}
+}
+build();
+let rsT; addEventListener('resize', () => { clearTimeout(rsT); rsT = setTimeout(build, 200); });
+
+let ox = 0, oy = 0, vx = -0.35, vy = -0.2, dragging = false, moved = 0, lx = 0, ly = 0;
+const mod = (n, m) => ((n % m) + m) % m;
+
+// glass edge: inside a band along the border, redraw the frame slightly magnified so the picture bends at the rim
+const RAD = 26 * DPR, BAND = 16 * DPR;   // tile corner radius / glass band, in canvas pixels
+function refract(ctx, cw, ch) {
+  ctx.save();
+  ctx.beginPath(); ctx.roundRect(0, 0, cw, ch, RAD); ctx.roundRect(BAND, BAND, cw - 2 * BAND, ch - 2 * BAND, RAD - BAND * .6);
+  ctx.clip('evenodd');
+  const m = .13; ctx.globalAlpha = 1;
+  ctx.drawImage(ctx.canvas, -cw * m, -ch * m, cw * (1 + 2 * m), ch * (1 + 2 * m));
+  ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(255,255,255,.1)'; ctx.fillRect(0, 0, cw, ch);
+  ctx.restore();
+}
+const gridEl = document.querySelector('.bg-grid'); let gridPos = ['', ''];
+let tick = 0;
+function frame() {
+  tick++;
+  if (!dragging && !entering && !vw.classList.contains('closing')) { ox += vx; oy += vy; vx *= .95; vy *= .95;
+    if (Math.abs(vx) < .35 && Math.abs(vy) < .35) { vx += (-.35 - vx) * .02; vy += (-.2 - vy) * .02; } } // gentle idle drift
+  // background grid pans with the wall, slower, for depth
+  const gx = Math.round(ox * .35) + 'px', gy = Math.round(oy * .35) + 'px';
+  if (gx !== gridPos[0] || gy !== gridPos[1]) { gridPos = [gx, gy]; gridEl.style.setProperty('--gx', gx); gridEl.style.setProperty('--gy', gy); }
+  const cx = innerWidth / 2, cy = innerHeight / 2, R = Math.hypot(cx, cy);
+  for (const t of tiles) {
+    // wrap into the visible window, centred on the screen
+    const x = mod(t.bx + ox + CW, WW) - CW + TW / 2 - (WW - innerWidth) / 2 + CW;
+    const y = mod(t.by + oy + CH, WH) - CH + TH / 2 - (WH - innerHeight) / 2 + CH;
+    const dx = (x - cx) / R, dy = (y - cy) / R, d = Math.min(Math.hypot(dx, dy), 1.4);
+    // fisheye: shrink and pull toward centre with distance, tilt away like a sphere
+    const s = Math.max(.96 - d * d * .5, .25);
+    const pull = 1 - d * .22;
+    const px = cx + (x - cx) * pull - TW / 2, py = cy + (y - cy) * pull - TH / 2;
+    t.el.style.transform = `translate3d(${px}px,${py}px,0) rotateY(${dx * 28}deg) rotateX(${-dy * 28}deg) scale(${s})`;
+    const op = Math.max(0, Math.min(1, 1.5 - d * .9));
+    t.el.style.opacity = op; t.s = s;
+    // on screen (using its scaled size) and not faded out
+    const hx = TW * s / 2, hy = TH * s / 2, mx = px + TW / 2, my = py + TH / 2;
+    t.vis = op > .15 && mx + hx > 0 && mx - hx < innerWidth && my + hy > 0 && my - hy < innerHeight;
+  }
+  if (vw.classList.contains('open') && !vw.classList.contains('closing')) return requestAnimationFrame(frame);
+  // keep every source playing
+  // only decode clips that are on screen
+  const need = new Set(); for (const t of tiles) if (t.vis) need.add(t.i);
+  vids.forEach((v, k) => { if (need.has(k)) { if (v.paused && !v.seeking) v.play().catch(() => {}); } else if (!v.paused) v.pause(); });
+  // paint visible tiles from their project video (cover-fit)
+  for (const t of tiles) {
+    if (!t.vis || (t.s < .6 && tick % 3)) continue;   // small edge tiles repaint every 3rd frame
+    const v = vids[t.i]; if (v.readyState < 2) continue;
+    const cw = t.ctx.canvas.width, ch = t.ctx.canvas.height;
+    const k = Math.max(cw / v.videoWidth, ch / v.videoHeight), w = v.videoWidth * k, h = v.videoHeight * k;
+    t.ctx.drawImage(v, (cw - w) / 2, (ch - h) / 2, w, h);
+    refract(t.ctx, cw, ch);
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ── Input ── */
+const intro = document.getElementById('intro');
+wall.addEventListener('pointerdown', e => { if (entering) return; dragging = true; moved = 0; lx = e.clientX; ly = e.clientY; vx = vy = 0; wall.classList.add('drag'); wall.setPointerCapture(e.pointerId); });
+wall.addEventListener('pointermove', e => { if (!dragging) return;
+  const dx = e.clientX - lx, dy = e.clientY - ly; ox += dx; oy += dy; vx = dx; vy = dy; lx = e.clientX; ly = e.clientY; moved += Math.abs(dx) + Math.abs(dy);
+  if (moved > 10) intro.classList.add('gone'); });
+wall.addEventListener('pointerup', e => { dragging = false; wall.classList.remove('drag');
+  if (moved < 6) { const el = document.elementsFromPoint(e.clientX, e.clientY).find(n => n.classList?.contains('tile'));
+    if (el) openProject(tiles.find(t => t.el === el).i, el); } });
+addEventListener('wheel', e => { if (entering) { e.preventDefault(); return; } if (vw.classList.contains('open')) return; /* let the player page scroll */ if (document.querySelector('.panel.open')) return; e.preventDefault(); vx -= e.deltaX * .08; vy -= e.deltaY * .08; intro.classList.add('gone'); }, { passive: false });
+
+/* ── Project viewer ── */
+const vw = document.getElementById('vw'), frameEl = vw.querySelector('.frame'), lv = frameEl.querySelector('video'), sugg = vw.querySelector('.sugg');
+const ease = 'cubic-bezier(.2,.8,.2,1)';
+const backBtn = document.querySelector('.back'), topBar = document.querySelector('.top');
+backBtn.onclick = () => closeLb();
+let curClip = -1, srcTile = null, filter = 'All';
+// one clip from every other video, matching the active chip
+const TICK = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#aaa"/><path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function renderSugg() {
+  const i = curClip, p = CLIPS[i];
+  const pick = [], seen = new Set([p.src]);
+  for (let k = 1; k <= CLIPS.length; k++) {
+    const j = (i + k * 5) % CLIPS.length, c = CLIPS[j];
+    if (!seen.has(c.src) && (filter === 'All' || c.tags.includes(filter))) { seen.add(c.src); pick.push(j); }
+  }
+  sugg.innerHTML = pick.map(j => `<div class="sg" data-i="${j}">
+    <div class="th glass"><video src="videos/previews/${CLIPS[j].preview}.mp4" muted loop playsinline autoplay></video><span class="dur">${CLIPS[j].length}</span></div>
+    <div class="tx"><h4>${CLIPS[j].long}</h4><span class="co">${CLIPS[j].company} ${TICK}</span></div></div>`).join('');
+  sugg.querySelectorAll('.sg').forEach(sg => sg.onclick = () => openProject(+sg.dataset.i, sg.querySelector('.th')));
+  sugg.scrollLeft = 0; requestAnimationFrame(syncArrows);
+}
+// arrows page the reel suggestions three at a time
+const arrows = { prev: vw.querySelector('.sarrow.prev'), next: vw.querySelector('.sarrow.next') };
+const syncArrows = () => {
+  arrows.prev.hidden = sugg.scrollLeft < 4;
+  arrows.next.hidden = sugg.scrollLeft + sugg.clientWidth >= sugg.scrollWidth - 4;
+};
+arrows.prev.onclick = () => sugg.scrollBy({ left: -sugg.clientWidth - 18 });
+arrows.next.onclick = () => sugg.scrollBy({ left: sugg.clientWidth + 18 });
+sugg.addEventListener('scroll', syncArrows, { passive: true });
+vw.querySelectorAll('.chips button').forEach(b => b.onclick = () => {
+  filter = b.dataset.f; vw.querySelectorAll('.chips button').forEach(x => x.classList.toggle('on', x === b)); renderSugg();
+});
+function openProject(i, fromEl) {
+  const p = CLIPS[i], wasOpen = vw.classList.contains('open');
+  curClip = i; srcTile = fromEl?.classList.contains('tile') ? fromEl : srcTile;
+  vw.classList.toggle('vertical', !!p.reel);   // reels play in a tall 9:16 player
+  document.documentElement.classList.toggle('vertical-view', !!p.reel);
+  lv.src = `videos/${p.src}.mp4`; lv.currentTime = p.start; lv.play().catch(() => {});
+  vw.querySelector('.vt').textContent = p.long; vw.querySelector('.cname').textContent = p.company;
+  vw.querySelector('.vsub').textContent = p.sub; vw.querySelector('.vdesc').textContent = p.desc;
+  const av = vw.querySelector('.av'); av.className = 'av' + (p.mono ? ' mono' : p.logo.endsWith('neurodiscovery-icon.svg') ? ' dark' : '');   // logos sit on white
+  av.innerHTML = p.mono ? p.mono : `<img src="${p.logo}" alt="${p.company} logo">`;
+  if (!wasOpen || location.hash.slice(1) !== slug(p.long)) history.replaceState(null, '', '#' + slug(p.long));
+  renderSugg();
+  vw.classList.add('open'); backBtn.classList.add('show'); topBar.classList.add('in');
+  // tile grows into the player
+  if (fromEl) {
+    const a = fromEl.getBoundingClientRect(), b = frameEl.getBoundingClientRect();
+    frameEl.animate([
+      { transform: `translate(${a.left - b.left}px,${a.top - b.top}px) scale(${a.width / b.width},${a.height / b.height})`, opacity: wasOpen ? .6 : 1 },
+      { transform: 'none', opacity: 1 }], { duration: 750, easing: ease });
+    if (!wasOpen) vw.animate([{ background: 'rgba(0,0,0,0)' }, { background: '#000' }], { duration: 450, easing: 'ease-out' });
+  }
+}
+function closeLb() {
+  if (!vw.classList.contains('open') || vw.classList.contains('closing')) return;
+  if (fromReels) { lv.pause(); location.href = 'reels.html'; return; }
+  backBtn.classList.remove('show'); topBar.classList.remove('in');
+  // fly back into the tile it came from (or the on-screen tile showing this clip)
+  const onScreen = tiles.filter(t => t.vis);
+  const target = onScreen.find(t => t.el === srcTile) || onScreen.find(t => t.i === curClip);
+  const finish = () => {
+    vw.style.transition = 'none'; vw.classList.remove('open', 'closing');
+    vw.offsetHeight; vw.style.transition = '';
+    lv.pause(); sugg.innerHTML = ''; srcTile = null; history.replaceState(null, '', location.pathname); frameEl.classList.remove('idle');
+  };
+  if (!target) {
+    frameEl.animate([{ transform: 'none' }, { transform: 'scale(.92)', opacity: 0 }], { duration: 300, easing: ease });
+    vw.classList.remove('open'); lv.pause(); history.replaceState(null, '', location.pathname); setTimeout(() => sugg.innerHTML = '', 400); return;
+  }
+  vw.classList.add('closing'); frameEl.classList.add('idle');
+  const a = frameEl.getBoundingClientRect(), b = target.el.getBoundingClientRect();
+  target.el.style.visibility = 'hidden';          // the player lands where the tile sits
+  const anim = frameEl.animate([
+    { transform: 'none' },
+    { transform: `translate(${b.left - a.left}px,${b.top - a.top}px) scale(${b.width / a.width},${b.height / a.height})` }],
+    { duration: 700, easing: 'cubic-bezier(.65,0,.25,1)', fill: 'forwards' });
+  anim.onfinish = () => { target.el.style.visibility = ''; finish(); anim.cancel(); };
+}
+vw.addEventListener('click', e => { if (e.target === vw || e.target.classList.contains('vmain') || e.target.classList.contains('vside')) closeLb(); });
+
+/* ── Custom player controls ── */
+const fmt = t => isFinite(t) ? `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}` : '0:00';
+const bar = frameEl.querySelector('.bar'), fill = bar.querySelector('.fill'), buf = bar.querySelector('.buf'), timeEl = frameEl.querySelector('.time');
+const togglePlay = () => lv.paused ? lv.play() : lv.pause();
+lv.onclick = togglePlay; frameEl.querySelector('.pp').onclick = togglePlay;
+frameEl.querySelector('.mute').onclick = () => { if (lv.volume === 0) { lv.volume = .6; lv.muted = false; } else lv.muted = !lv.muted; };
+frameEl.querySelector('.fs').onclick = () => document.fullscreenElement ? document.exitFullscreen() : frameEl.requestFullscreen?.();
+frameEl.addEventListener('contextmenu', e => e.preventDefault());   // no "Save video as…"
+lv.addEventListener('play', () => frameEl.classList.add('playing'));
+lv.addEventListener('pause', () => { frameEl.classList.remove('playing', 'idle'); });
+const volEl = frameEl.querySelector('.vol'), vbar = frameEl.querySelector('.vbar'), vfill = frameEl.querySelector('.vfill');
+lv.addEventListener('volumechange', () => {
+  frameEl.classList.toggle('muted', lv.muted || lv.volume === 0);
+  vfill.style.width = (lv.muted ? 0 : lv.volume * 100) + '%';
+});
+const setVol = e => { const r = vbar.getBoundingClientRect(); lv.volume = Math.min(Math.max((e.clientX - r.left) / r.width, 0), 1); lv.muted = lv.volume === 0; };
+vbar.addEventListener('pointerdown', e => { volEl.classList.add('drag'); vbar.setPointerCapture(e.pointerId); setVol(e); });
+vbar.addEventListener('pointermove', e => volEl.classList.contains('drag') && setVol(e));
+vbar.addEventListener('pointerup', () => volEl.classList.remove('drag'));
+vbar.addEventListener('keydown', e => { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); lv.muted = false; lv.volume = Math.min(Math.max(lv.volume + (e.key === 'ArrowRight' ? .1 : -.1), 0), 1); } });
+lv.addEventListener('timeupdate', () => {
+  fill.style.width = (lv.currentTime / lv.duration * 100 || 0) + '%';
+  timeEl.innerHTML = `${fmt(lv.currentTime)} <em>/</em> ${fmt(lv.duration)}`;
+  if (lv.buffered.length) buf.style.width = (lv.buffered.end(lv.buffered.length - 1) / lv.duration * 100) + '%';
+});
+let scrubbing = false;
+const seek = e => { const r = bar.getBoundingClientRect(); lv.currentTime = Math.min(Math.max((e.clientX - r.left) / r.width, 0), 1) * lv.duration; };
+bar.addEventListener('pointerdown', e => { scrubbing = true; bar.setPointerCapture(e.pointerId); seek(e); });
+bar.addEventListener('pointermove', e => scrubbing && seek(e));
+bar.addEventListener('pointerup', () => scrubbing = false);
+// hide controls after a moment of no mouse movement while playing
+let idleT;
+frameEl.addEventListener('pointermove', () => { frameEl.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => !lv.paused && frameEl.classList.add('idle'), 2200); });
+addEventListener('keydown', e => { if (vw.classList.contains('open') && e.code === 'Space') { e.preventDefault(); togglePlay(); } });
+
+/* ── Share ── */
+const slug = t => t.toLowerCase().replace(/[^a-z0-9]+/g, '');   // used with each project's long title
+const acts = vw.querySelector('.acts');
+acts.querySelector('.share').onclick = async () => {
+  const url = location.href.split('#')[0] + '#' + slug(CLIPS[curClip].long);
+  if (navigator.share) { try { await navigator.share({ title: CLIPS[curClip].long, url }); return; } catch {} }
+  try { await navigator.clipboard.writeText(url); toast('Link copied'); } catch { toast(url); }
+};
+const toastEl = document.getElementById('toast'); let toastT;
+function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), 1800); }
+// open a shared link straight into its project
+const fromReels = document.documentElement.classList.contains('from-reels');
+if (location.hash.length > 1) { const k = CLIPS.findIndex(c => slug(c.long) === location.hash.slice(1)); if (k >= 0) setTimeout(() => openProject(k), fromReels ? 0 : 300); }
+
+/* ── Dock panels ── */
+const btns = document.querySelectorAll('.dock button');
+btns.forEach(b => b.onclick = () => {
+  // a reel opened from the Reels page has no wall behind it, so go to the full homepage
+  if (fromReels) { location.href = 'index.html' + (b.dataset.p === 'work' ? '' : `?p=${b.dataset.p}`); return; }
+  if (vw.classList.contains('open')) closeLb();
+  const id = 'p-' + b.dataset.p, was = b.classList.contains('on');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('open')); btns.forEach(x => x.classList.remove('on'));
+  if (!was && b.dataset.p !== 'work') { document.getElementById(id).classList.add('open'); b.classList.add('on'); }
+});
+document.querySelectorAll('.bx[data-go]').forEach(b => b.onclick = () => document.querySelector(`.dock [data-p="${b.dataset.go}"]`).click());
+document.getElementById('p-about').addEventListener('click', e => { if (e.target.classList.contains('bento') || e.target.id === 'p-about') document.querySelector('.dock [data-p="about"]').click(); });
+document.getElementById('p-contact').addEventListener('click', e => { if (e.target.classList.contains('cwrap') || e.target.id === 'p-contact') document.querySelector('.dock [data-p="contact"]').click(); });
+addEventListener('keydown', e => { if (e.key === 'Escape') { closeLb(); document.querySelectorAll('.panel.open,.dock .on').forEach(n => n.classList.remove('open', 'on')); } });
+
+{ const p = new URLSearchParams(location.search).get('p'); const b = p && document.querySelector(`.dock [data-p="${p}"]`); if (b) b.click(); }
+
+// background grid follows the cursor (one style write per frame at most)
+(() => {
+  const g = document.querySelector('.bg-grid'); let x = -999, y = -999, queued = false;
+  addEventListener('pointermove', e => {
+    x = e.clientX; y = e.clientY;
+    if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; g.style.setProperty('--mx', x + 'px'); g.style.setProperty('--my', y + 'px'); }); }
+  }, { passive: true });
+})();
+
+/* ── Globe loader: cards gather into a spinning globe, then fly out into their wall tiles ── */
+let entering = document.documentElement.classList.contains('loading');
+const loaderEl = document.getElementById('loader');
+function finishEntrance() {
+  entering = false;
+  document.documentElement.classList.remove('loading', 'loader-ui');
+  loaderEl.remove(); document.querySelector('.flyers')?.remove();
+  setTimeout(() => intro.classList.add('gone'), 2600);
+}
+if (!entering) finishEntrance();
+else {
+  const globe = document.getElementById('globe'), strips = [...loaderEl.querySelectorAll('.strip')];
+  strips.forEach(st => st.innerHTML = [...'0123456789'].map(d => `<span>${d}</span>`).join(''));
+  const paint = n => String(n).padStart(3, '0').split('').forEach((d, i) => strips[i].style.transform = `translateY(${-d * 10}%)`);
+  paint(0);
+  // scrambled caption
+  const cap = loaderEl.querySelector('.ld-cap'), CAP = 'LOADING', GL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*+/';
+  let capTick = 0;
+  const capT = setInterval(() => { capTick++; const rev = Math.floor((capTick % 44) / 2.4);
+    cap.textContent = [...CAP].map((c, i) => c === ' ' || i < rev ? c : GL[(Math.random() * GL.length) | 0]).join(''); }, 55);
+
+  let gcards = [], picks = [], rot = 0, spinning = true, done = false, t0 = performance.now(), shown = 0;
+  const G = 110;  // cards on the globe; the first ones are the tiles on screen, the rest are decoration
+
+  // wait one frame so the wall has worked out which tiles are on screen
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    picks = tiles.filter(t => t.vis).sort((a, b) => b.s - a.s).slice(0, G);
+    const R = Math.min(innerWidth, innerHeight) * (innerWidth < 640 ? .38 : .33);
+    const assets = [];
+    for (let k = 0; k < G; k++) {
+      const i = k < picks.length ? picks[k].i : (k * 7) % CLIPS.length;
+      const cover = `videos/covers/${CLIPS[i].preview}.jpg`;
+      const el = document.createElement('div');
+      el.className = 'gcard'; el.style.backgroundImage = `url("${cover}")`;
+      // even spread over the sphere (Fibonacci lattice)
+      const y = 1 - 2 * (k + .5) / G, lat = Math.asin(y) * 180 / Math.PI, lon = k * 137.508;
+      el.dataset.lon = lon;
+      el.dataset.to = `rotateY(${lon}deg) rotateX(${lat}deg) translateZ(${R}px)`;
+      el.style.transitionDelay = `${Math.round(k * 1700 / G)}ms`;   // whole globe gathers in under 2s
+      globe.append(el); gcards.push(el);
+      assets.push(new Promise(res => { const im = new Image(); im.onload = im.onerror = res; im.src = cover; }));
+    }
+    requestAnimationFrame(() => gcards.forEach(el => { el.style.transform = el.dataset.to; el.style.opacity = 1; }));
+    // real progress: globe covers + the preview videos of the tiles that will be on screen
+    let coversDone = 0; assets.forEach(p => p.then(() => coversDone++));
+    const need = [...new Set(picks.map(t => t.i))].map(i => vids[i]);
+    const poll = setInterval(() => {
+      if (done) return clearInterval(poll);
+      const ready = coversDone + need.filter(v => v.readyState >= 2).length, total = G + need.length;
+      const pct = Math.floor(ready / total * 100);
+      if (pct > shown) { shown = pct; paint(pct); }
+      const elapsed = performance.now() - t0;
+      if ((ready >= total && elapsed > 2400) || elapsed > 10000) { if (shown < 100) paint(100); clearInterval(poll); setTimeout(handoff, 350); }
+    }, 100);
+  }));
+
+  // spin
+  let last = performance.now();
+  (function spin(now) {
+    if (!spinning) return;
+    rot += (now - last) / 1000 * 26; last = now;
+    globe.style.transform = `rotateX(-14deg) rotateY(${rot}deg)`;
+    requestAnimationFrame(spin);
+  })(last);
+
+  function handoff() {
+    if (done) return; done = true; spinning = false; clearInterval(capT);
+    loaderEl.classList.add('out');
+    document.documentElement.classList.remove('loader-ui');   // logo shrinks into the header, dock rises
+    const fly = document.createElement('div'); fly.className = 'flyers'; document.body.append(fly);
+    let last = 0;
+    gcards.forEach((el, k) => {
+      const tile = picks[k];
+      if (!tile) { el.style.transitionDelay = '0ms'; el.style.opacity = 0; return; }
+      const a = el.getBoundingClientRect();
+      const front = Math.cos((rot + +el.dataset.lon) * Math.PI / 180) > 0;
+      const f = document.createElement('div');
+      f.className = 'flyer'; f.style.width = TW + 'px'; f.style.height = TH + 'px';
+      f.style.backgroundImage = el.style.backgroundImage;
+      fly.append(f); el.style.visibility = 'hidden';
+      const from = `translate3d(${a.left + a.width / 2 - TW / 2}px,${a.top + a.height / 2 - TH / 2}px,0) scale(${a.width / TW})`;
+      const delay = k * 16; last = Math.max(last, delay);
+      f.animate([{ transform: from, opacity: front ? 1 : 0, borderRadius: '12px' },
+                 { transform: tile.el.style.transform, opacity: +tile.el.style.opacity || 1, borderRadius: '26px' }],
+                { duration: 1150, delay, easing: 'cubic-bezier(.65,0,.25,1)', fill: 'forwards' });
+    });
+    setTimeout(finishEntrance, last + 1200);
+  }
+  function skip() { if (!entering) return; done = true; spinning = false; clearInterval(capT); finishEntrance(); }
+  loaderEl.querySelector('.ld-skip').onclick = skip;
+  addEventListener('keydown', e => { if (entering && (e.key === 'Escape' || e.key === 'Tab')) skip(); });
+}
+</script>
+</body>
+</html>
