@@ -32,7 +32,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .badge span{writing-mode:vertical-rl;transform:rotate(180deg)}
 
 /* intro */
-.intro{position:fixed;inset:0;z-index:15;display:grid;place-items:center;pointer-events:none;transition:opacity .8s}
+/* kept only for screen readers and search: the name and role are not drawn over the wall */
+.intro{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .intro h1{font-size:clamp(28px,4vw,56px);font-weight:600;letter-spacing:-.04em;text-align:center;line-height:1.05}
 .intro p{color:var(--mute);text-align:center;margin-top:14px;font-size:14px}
 .intro.gone{opacity:0}
@@ -64,16 +65,21 @@ html.loading .top{z-index:70}
 .logo{transform-origin:0 50%;transition:transform 1.1s cubic-bezier(.65,0,.25,1)}
 #loader{position:fixed;inset:0;z-index:60;background:#000;transition:background .9s}
 #loader.out{background:rgba(0,0,0,0);pointer-events:none}
-.g-stage{position:absolute;inset:0;perspective:1200px;display:grid;place-items:center;pointer-events:none}
-.globe{position:relative;width:0;height:0;transform-style:preserve-3d}
-.gcard{position:absolute;width:96px;height:62px;left:-48px;top:-31px;border-radius:10px;background:#111 center/cover;backface-visibility:hidden;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.35),0 6px 18px rgba(0,0,0,.4);opacity:0;transform:scale(.1);
-  transition:transform 1.2s cubic-bezier(.2,.8,.2,1),opacity .6s}
+.g-stage{position:absolute;inset:0;pointer-events:none}
+.globe{position:absolute;left:50%;top:50%;width:0;height:0}
+/* one square flicks through the covers like a flipbook, then unfolds into a column */
+.gcard{position:absolute;width:var(--w);height:var(--h);left:calc(var(--w) / -2);top:calc(var(--h) / -2);border-radius:8px;will-change:transform;background:#111 center/cover;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);transition:transform 1.2s cubic-bezier(.22,1,.36,1),opacity .6s}
+.gcard.flip{transform:scale(.6);transition:transform 1.8s cubic-bezier(.22,1,.36,1)}
+.ld-side{position:absolute;top:50%;transform:translateY(-50%);font-size:12px;font-weight:600;letter-spacing:.12em;color:#9a9a9a;transition:opacity .4s}
+.ld-side.l{left:28px}.ld-side.r{right:28px}
+.ld-tag{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);width:min(340px,80vw);text-align:center;font-size:13px;line-height:1.5;color:#8a8a8a;transition:opacity .4s}
+#loader.out .ld-side,#loader.out .ld-tag,#loader.spread .ld-side,#loader.spread .ld-tag,#loader.spread .ld-meter,#loader.spread .ld-cap,#loader.spread .ld-skip{opacity:0;pointer-events:none}
 .ld-meter{position:absolute;right:28px;bottom:20px;text-align:right;transition:opacity .4s}
 .ld-cap{position:absolute;top:32px;right:28px;font:500 13px/1 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.18em;color:#8a8a8a;transition:opacity .4s}
 .ld-count{display:flex;justify-content:flex-end;font:500 clamp(84px,13vw,190px)/1 "JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.04em}
 .ld-count .digit{display:inline-block;height:1em;overflow:hidden}
-.ld-count .strip{display:flex;flex-direction:column;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.ld-count .strip{display:flex;flex-direction:column;transition:transform .16s ease-out}
 .ld-count .strip span{display:block;height:1em}
 .ld-skip{position:absolute;left:28px;bottom:32px;padding:10px 18px;border-radius:999px;background:rgba(255,255,255,.1);font-size:14px;font-weight:600;transition:opacity .4s,background .2s}
 .ld-skip:hover{background:rgba(255,255,255,.2)}
@@ -81,7 +87,7 @@ html.loading .top{z-index:70}
 /* cards leaving the globe for their wall tiles; same perspective as #wall so they land exactly */
 .flyers{position:fixed;inset:0;z-index:61;perspective:1400px;pointer-events:none}
 .flyer{position:absolute;left:0;top:0;border-radius:26px;background:#111 center/cover;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.3)}
-@media (max-width:640px){.ld-cap{top:24px;right:18px}.ld-meter{right:18px;bottom:14px}.ld-skip{left:18px;bottom:22px}.gcard{width:62px;height:40px;left:-31px;top:-20px;border-radius:7px}}
+@media (max-width:640px){.ld-cap{top:24px;right:18px}.ld-meter{right:18px;bottom:14px}.ld-skip{left:18px;bottom:22px}.ld-side{display:none}}
 
 /* glass rim: bright edge with a soft iridescent sheen, like thick glass */
 .glass::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;z-index:3;pointer-events:none;
@@ -155,9 +161,11 @@ button.bx{cursor:pointer}button.bx:hover{box-shadow:inset 0 0 0 1px var(--brand)
 .bx small{display:block;margin-top:6px;color:var(--mute);font-size:13px;line-height:1.5}
 .b-profile{grid-column:span 2;grid-row:span 2}
 .who{display:flex;align-items:center;gap:12px}
-.who img{width:48px;height:48px;border-radius:14px;object-fit:cover}
+.who img{width:68px;height:68px;border-radius:16px;object-fit:cover;padding-top:2px;background:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.12)}
 .who b{display:block;font-size:18px;font-weight:500}.who small{margin-top:0}
-.b-profile{justify-content:flex-start}
+.b-profile{justify-content:flex-start;padding:0;overflow:hidden;background:#000}
+.look{position:absolute;inset:0;width:100%;height:100%}
+  font:700 15px Manrope,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:transparent;-webkit-text-stroke:1px #cfcfcf;transition:color .25s}
 .pitchbox{margin-top:8px}
 .pitch{font-size:clamp(20px,min(2.4vw,3.6vh),32px);line-height:1.15;letter-spacing:-.03em;color:#f2f2f2;margin:0;font-weight:500}
 .b-profile .sub{margin:10px 0 0;color:#a9a9a9;font-size:14px;line-height:1.6;max-width:440px}
@@ -174,6 +182,11 @@ button.bx{cursor:pointer}button.bx:hover{box-shadow:inset 0 0 0 1px var(--brand)
   box-shadow:0 20px 50px rgba(0,0,0,.6);-webkit-mask:linear-gradient(90deg,transparent,#000 30%);mask:linear-gradient(90deg,transparent,#000 30%);transition:transform .5s}
 .b-work:hover .peek{transform:rotate(-2deg) translateY(-4px)}
 .b-tools{grid-column:span 2}
+.cl-rot{position:relative;height:52px;margin-top:12px;overflow:hidden}
+.cl{position:absolute;inset:0;display:flex;align-items:center;gap:12px;opacity:0;transform:translateY(100%);filter:blur(6px);transition:transform .7s cubic-bezier(.2,.8,.2,1),opacity .7s,filter .7s}
+.cl.on{opacity:1;transform:none;filter:none}
+.cl.out{opacity:0;transform:translateY(-100%);filter:blur(6px)}
+.cl img{height:34px;max-width:100%;object-fit:contain;object-position:left center}
 .marquee{margin:14px -20px 2px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;cursor:grab;touch-action:pan-x;padding:0 20px;-webkit-mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
 .marquee::-webkit-scrollbar{display:none}
 .marquee.drag{cursor:grabbing}
@@ -183,7 +196,7 @@ button.bx{cursor:pointer}button.bx:hover{box-shadow:inset 0 0 0 1px var(--brand)
 .tl img{width:28px;height:28px;padding:4px;border-radius:9px;background:rgba(255,255,255,.06);object-fit:contain}
 .tl em{font-style:normal;font-size:13px;color:#d6d6d6}
 /* brand accurate tiles: Adobe icons are full app tiles, single colour marks sit on their brand colour */
-.tl img[src$="bolt.svg"],.tl img[src$="aftereffects.svg"],.tl img[src$="premiere.svg"],.tl img[src$="illustrator.svg"],.tl img[src$="photoshop.svg"]{padding:0;background:none;border-radius:7px}
+.tl img[src$="bolt.svg"],.tl img[src$="higgsfield.png"],.tl img[src$="magnific.png"],.tl img[src$="aftereffects.svg"],.tl img[src$="premiere.svg"],.tl img[src$="illustrator.svg"],.tl img[src$="photoshop.svg"]{padding:0;background:none;border-radius:7px}
 .tl img[src$="framer.svg"],.tl img[src$="openai.svg"]{background:#000;padding:6px}
 .tl img[src$="davinci.svg"]{background:#233A51;padding:5px}
 .tl img[src$="cinema4d.svg"]{background:#011A6A;padding:5px}
@@ -346,9 +359,14 @@ body:has(.panel.open) .top::before,:root.vertical-view .top.in::before{content:"
 </head>
 <body>
 <script>if (new URLSearchParams(location.search).get('from') === 'reels') document.documentElement.classList.add('from-reels');
-if (!matchMedia('(prefers-reduced-motion: reduce)').matches && location.hash.length < 2) document.documentElement.classList.add('loading', 'loader-ui');</script>
+// the loading intro plays on every fresh open or reload; arriving from Reels or opening About inside the site goes straight in
+{ const nav = performance.getEntriesByType('navigation')[0], reload = nav && nav.type === 'reload';
+  let fromSite = false; try { fromSite = new URL(document.referrer).origin === location.origin; } catch (e) {}
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches && location.hash.length < 2 && !location.search && (reload || !fromSite)) document.documentElement.classList.add('loading', 'loader-ui'); }</script>
 <div id="loader" role="status" aria-label="Loading reels">
   <div class="g-stage"><div class="globe" id="globe"></div></div>
+  <span class="ld-side l" aria-hidden="true">MOTION DESIGN</span><span class="ld-side r" aria-hidden="true">AI VIDEO</span>
+  <p class="ld-tag" aria-hidden="true">Launch films and product motion for SaaS startups and brands.</p>
   <button class="ld-skip">Skip intro</button>
   <span class="ld-cap" aria-hidden="true">LOADING</span>
   <div class="ld-meter" aria-hidden="true">
@@ -360,7 +378,7 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches && location.hash.len
 
 <header class="top"><div class="logo">Sudeep Mannava<i>.</i></div><button class="back" aria-label="Back to all work">Back</button></header>
 
-<div class="intro" id="intro"><div><h1>Sudeep Mannava<br>Motion Designer</h1><p>Drag to explore</p></div></div>
+<div class="intro" id="intro"><div><h1>Sudeep Mannava<br>Motion Designer</h1></div></div>
 
 <div class="bg-grid" aria-hidden="true"></div>
 <div id="wall"></div>
@@ -374,34 +392,29 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches && location.hash.len
 </nav>
 
 <section class="panel about-panel" id="p-about"><div class="bento">
+  <!-- profile: a short clip of Sudeep looking around; the frame shown follows the mouse so he looks at the pointer -->
   <div class="bx b-profile">
-    <div class="who"><img src="images/avatar.jpg" alt="Sudeep Mannava"><div><b>Sudeep Mannava</b><small>Motion Designer</small></div></div>
-    <div class="pitchbox">
-      <p class="pitch">I turn complex software into launch films people actually watch.</p>
-      <p class="sub">Motion design and AI video for SaaS startups and brands. Clear stories, premium polish and fast turnarounds, from script to final render.</p>
-    </div>
+    <canvas class="look" role="img" aria-label="Sudeep Mannava"></canvas>
     <!-- Testimonial: fill in a real client quote, then remove the hidden attribute -->
     <figure class="quote" hidden>
       <blockquote>CLIENT QUOTE</blockquote>
       <figcaption>Name, Role at Company</figcaption>
     </figure>
-    <div class="pfoot">
-      <span class="avail"><i></i>Available for new projects</span>
-    </div>
   </div>
   <div class="bx"><span class="tag"><svg viewBox="0 0 16 16"><rect x="2" y="5" width="12" height="9" rx="2"/><path d="M6 5V3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5V5M2 9h12"/></svg>Experience</span><div><h3>3+ yrs</h3><small>Launch films and product motion for SaaS, fintech and health tech</small></div></div>
-  <div class="bx"><span class="tag"><svg viewBox="0 0 16 16"><path d="M8 14.5s5-4.3 5-8.2a5 5 0 0 0-10 0c0 3.9 5 8.2 5 8.2z"/><circle cx="8" cy="6.3" r="1.8"/></svg>Location</span><div><h3>India</h3><small>Working with teams worldwide, GMT+5:30</small></div></div>
+  <div class="bx b-clients"><span class="tag"><svg viewBox="0 0 16 16"><path d="M2.5 13.5v-1a3 3 0 0 1 3-3h1a3 3 0 0 1 3 3v1M10.5 9.6a3 3 0 0 1 3 2.9v1"/><circle cx="6" cy="5" r="2.4"/><path d="M10.4 2.7a2.4 2.4 0 0 1 0 4.6"/></svg>Clients</span><div><h3>Trusted by</h3><div class="cl-rot" aria-label="Turgo, AionQ, Quartica, Tiramai"><span class="cl on"><img src="logos/turgo-white.svg" alt="Turgo"></span><span class="cl"><img src="logos/aionq-white.svg" alt="AionQ"></span><span class="cl"><img src="logos/quartica.svg" alt="Quartica"></span><span class="cl"><img src="logos/tiramai.svg" alt="Tiramai"></span></div></div></div>
   <button class="bx b-work" data-go="work"><span class="tag"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1.2"/><rect x="9" y="2" width="5" height="5" rx="1.2"/><rect x="2" y="9" width="5" height="5" rx="1.2"/><rect x="9" y="9" width="5" height="5" rx="1.2"/></svg>Work</span><img class="peek" src="videos/covers/reel-1.jpg" alt=""><div><h3>Selected works</h3><small>Launch films, product walkthroughs and AI ads that convert</small></div></button>
   <div class="bx b-tools"><span class="tag"><svg viewBox="0 0 16 16"><path d="M10.5 2.2a3.3 3.3 0 0 0-3.9 4.4L2.4 10.8a1.4 1.4 0 0 0 2 2l4.2-4.2a3.3 3.3 0 0 0 4.4-3.9l-2 2-1.8-.4-.4-1.8z"/></svg>Tools</span><div><h3>What I work with</h3><small>Industry standard motion and 3D tools, plus the latest AI video models.</small>
-    <div class="marquee" aria-label="After Effects, Premiere Pro, Illustrator, Photoshop, Blender, Cinema 4D, DaVinci Resolve, Figma, Framer, Claude, OpenAI, Lovable, Bolt"><div class="track"><span class="tl"><img src="images/tools/aftereffects.svg" alt=""><em>After Effects</em></span><span class="tl"><img src="images/tools/premiere.svg" alt=""><em>Premiere Pro</em></span><span class="tl"><img src="images/tools/illustrator.svg" alt=""><em>Illustrator</em></span><span class="tl"><img src="images/tools/photoshop.svg" alt=""><em>Photoshop</em></span><span class="tl"><img src="images/tools/blender.svg" alt=""><em>Blender</em></span><span class="tl"><img src="images/tools/cinema4d.svg" alt=""><em>Cinema 4D</em></span><span class="tl"><img src="images/tools/davinci.svg" alt=""><em>DaVinci Resolve</em></span><span class="tl"><img src="images/tools/figma.svg" alt=""><em>Figma</em></span><span class="tl"><img src="images/tools/framer.svg" alt=""><em>Framer</em></span><span class="tl"><img src="images/tools/claude.svg" alt=""><em>Claude</em></span><span class="tl"><img src="images/tools/openai.svg" alt=""><em>OpenAI</em></span><span class="tl"><img src="images/tools/lovable.svg" alt=""><em>Lovable</em></span><span class="tl"><img src="images/tools/bolt.svg" alt=""><em>Bolt</em></span><span class="tl" aria-hidden="true"><img src="images/tools/aftereffects.svg" alt=""><em>After Effects</em></span><span class="tl" aria-hidden="true"><img src="images/tools/premiere.svg" alt=""><em>Premiere Pro</em></span><span class="tl" aria-hidden="true"><img src="images/tools/illustrator.svg" alt=""><em>Illustrator</em></span><span class="tl" aria-hidden="true"><img src="images/tools/photoshop.svg" alt=""><em>Photoshop</em></span><span class="tl" aria-hidden="true"><img src="images/tools/blender.svg" alt=""><em>Blender</em></span><span class="tl" aria-hidden="true"><img src="images/tools/cinema4d.svg" alt=""><em>Cinema 4D</em></span><span class="tl" aria-hidden="true"><img src="images/tools/davinci.svg" alt=""><em>DaVinci Resolve</em></span><span class="tl" aria-hidden="true"><img src="images/tools/figma.svg" alt=""><em>Figma</em></span><span class="tl" aria-hidden="true"><img src="images/tools/framer.svg" alt=""><em>Framer</em></span><span class="tl" aria-hidden="true"><img src="images/tools/claude.svg" alt=""><em>Claude</em></span><span class="tl" aria-hidden="true"><img src="images/tools/openai.svg" alt=""><em>OpenAI</em></span><span class="tl" aria-hidden="true"><img src="images/tools/lovable.svg" alt=""><em>Lovable</em></span><span class="tl" aria-hidden="true"><img src="images/tools/bolt.svg" alt=""><em>Bolt</em></span></div></div></div></div>
+    <div class="marquee" aria-label="After Effects, Premiere Pro, Illustrator, Photoshop, Blender, Cinema 4D, DaVinci Resolve, Figma, Framer, Claude, OpenAI, Lovable, Bolt, Higgsfield, Magnific"><div class="track"><span class="tl"><img src="images/tools/aftereffects.svg" alt=""><em>After Effects</em></span><span class="tl"><img src="images/tools/premiere.svg" alt=""><em>Premiere Pro</em></span><span class="tl"><img src="images/tools/illustrator.svg" alt=""><em>Illustrator</em></span><span class="tl"><img src="images/tools/photoshop.svg" alt=""><em>Photoshop</em></span><span class="tl"><img src="images/tools/blender.svg" alt=""><em>Blender</em></span><span class="tl"><img src="images/tools/cinema4d.svg" alt=""><em>Cinema 4D</em></span><span class="tl"><img src="images/tools/davinci.svg" alt=""><em>DaVinci Resolve</em></span><span class="tl"><img src="images/tools/figma.svg" alt=""><em>Figma</em></span><span class="tl"><img src="images/tools/framer.svg" alt=""><em>Framer</em></span><span class="tl"><img src="images/tools/claude.svg" alt=""><em>Claude</em></span><span class="tl"><img src="images/tools/openai.svg" alt=""><em>OpenAI</em></span><span class="tl"><img src="images/tools/lovable.svg" alt=""><em>Lovable</em></span><span class="tl"><img src="images/tools/bolt.svg" alt=""><em>Bolt</em></span><span class="tl"><img src="images/tools/higgsfield.png" alt=""><em>Higgsfield</em></span><span class="tl"><img src="images/tools/magnific.png" alt=""><em>Magnific</em></span><span class="tl" aria-hidden="true"><img src="images/tools/aftereffects.svg" alt=""><em>After Effects</em></span><span class="tl" aria-hidden="true"><img src="images/tools/premiere.svg" alt=""><em>Premiere Pro</em></span><span class="tl" aria-hidden="true"><img src="images/tools/illustrator.svg" alt=""><em>Illustrator</em></span><span class="tl" aria-hidden="true"><img src="images/tools/photoshop.svg" alt=""><em>Photoshop</em></span><span class="tl" aria-hidden="true"><img src="images/tools/blender.svg" alt=""><em>Blender</em></span><span class="tl" aria-hidden="true"><img src="images/tools/cinema4d.svg" alt=""><em>Cinema 4D</em></span><span class="tl" aria-hidden="true"><img src="images/tools/davinci.svg" alt=""><em>DaVinci Resolve</em></span><span class="tl" aria-hidden="true"><img src="images/tools/figma.svg" alt=""><em>Figma</em></span><span class="tl" aria-hidden="true"><img src="images/tools/framer.svg" alt=""><em>Framer</em></span><span class="tl" aria-hidden="true"><img src="images/tools/claude.svg" alt=""><em>Claude</em></span><span class="tl" aria-hidden="true"><img src="images/tools/openai.svg" alt=""><em>OpenAI</em></span><span class="tl" aria-hidden="true"><img src="images/tools/lovable.svg" alt=""><em>Lovable</em></span><span class="tl" aria-hidden="true"><img src="images/tools/bolt.svg" alt=""><em>Bolt</em></span><span class="tl" aria-hidden="true"><img src="images/tools/higgsfield.png" alt=""><em>Higgsfield</em></span><span class="tl" aria-hidden="true"><img src="images/tools/magnific.png" alt=""><em>Magnific</em></span></div></div></div></div>
   <div class="bx b-contact"><span class="tag"><svg viewBox="0 0 16 16"><rect x="1.5" y="3" width="13" height="10" rx="2"/><path d="M2 4.5l6 4.5 6-4.5"/></svg>Contact</span>
     <div><h3>Let's make your next launch unmissable</h3><a class="cmail" href="mailto:nagasaisudeep@gmail.com">nagasaisudeep@gmail.com</a></div>
     <div class="crow2">
 
     <a class="cicon c-in" href="https://www.linkedin.com/in/sudeep-mannava-49bb0a256/" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 9h3v11h-3zM6 3.5a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6zM10 9h2.9v1.5h.1c.4-.8 1.4-1.7 3-1.7 3.2 0 3.8 2.1 3.8 4.8V20h-3v-5.6c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V20h-3z"/></svg></a>
     <a class="cicon c-wa" href="https://wa.me/917989193704" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20l1.2-3.8A8 8 0 1 1 8 19z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 1c-1-.4-2.6-2-3-3l1-1-1-2z" fill="currentColor" stroke="none"/></svg></a>
+    <a class="cicon c-ph" href="tel:+917989193704" aria-label="Call +91 79891 93704"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6.6 3.5h3l1.5 4-2 1.3a11 11 0 0 0 6.1 6.1l1.3-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z"/></svg></a>
     <a class="cicon c-mail" href="mailto:nagasaisudeep@gmail.com" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></svg></a>
-      <a class="ccall" href="mailto:nagasaisudeep@gmail.com?subject=Let%27s%20arrange%20a%20call">Arrange a call</a>
+      <a class="ccall" href="https://calendly.com/nagasaisudeep/30min" target="_blank" rel="noopener">Book a call</a>
     </div>
   </div>
 </div></section>
@@ -423,7 +436,8 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches && location.hash.len
     <a class="cicon c-mail" href="mailto:nagasaisudeep@gmail.com" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></svg></a>
     <a class="cicon c-in" href="https://www.linkedin.com/in/sudeep-mannava-49bb0a256/" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 9h3v11h-3zM6 3.5a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6zM10 9h2.9v1.5h.1c.4-.8 1.4-1.7 3-1.7 3.2 0 3.8 2.1 3.8 4.8V20h-3v-5.6c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V20h-3z"/></svg></a>
     <a class="cicon c-wa" href="https://wa.me/917989193704" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20l1.2-3.8A8 8 0 1 1 8 19z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 1c-1-.4-2.6-2-3-3l1-1-1-2z" fill="currentColor" stroke="none"/></svg></a>
-    <a class="ccall" href="mailto:nagasaisudeep@gmail.com?subject=Let%27s%20arrange%20a%20call">Arrange a call</a>
+    <a class="cicon c-ph" href="tel:+917989193704" aria-label="Call +91 79891 93704"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6.6 3.5h3l1.5 4-2 1.3a11 11 0 0 0 6.1 6.1l1.3-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z"/></svg></a>
+    <a class="ccall" href="https://calendly.com/nagasaisudeep/30min" target="_blank" rel="noopener">Book a call</a>
   </div>
 </div></section>
 
@@ -746,9 +760,8 @@ btns.forEach(b => b.onclick = () => {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('open')); btns.forEach(x => x.classList.remove('on'));
   if (!was && b.dataset.p !== 'work') { document.getElementById(id).classList.add('open'); b.classList.add('on'); }
 });
-// tools row: drifts on its own, pauses on hover, and can be dragged, swiped or wheeled; loops seamlessly
-(() => {
-  const m = document.querySelector('.marquee'); if (!m) return;
+// tools and clients rows: drift on its own, pauses on hover, and can be dragged, swiped or wheeled; loops seamlessly
+document.querySelectorAll('.marquee').forEach(m => {
   let hover = false, drag = false, lx = 0;
   const loop = () => { const half = m.scrollWidth / 2; if (m.scrollLeft >= half) m.scrollLeft -= half; else if (m.scrollLeft <= 0) m.scrollLeft += half; };
   m.addEventListener('pointerenter', () => hover = true);
@@ -763,6 +776,75 @@ btns.forEach(b => b.onclick = () => {
     if (!hover && document.getElementById('p-about').classList.contains('open')) { acc += .5; if (acc >= 1) { m.scrollLeft += Math.floor(acc); acc %= 1; loop(); } }
     requestAnimationFrame(tick);
   })();
+});
+// clients card: one logo at a time rises in and lifts away
+(() => {
+  const cs = [...document.querySelectorAll('.cl')]; let i = 0;
+  setInterval(() => {
+    if (!document.getElementById('p-about').classList.contains('open')) return;
+    const a = cs[i], b = cs[i = (i + 1) % cs.length];
+    a.classList.replace('on', 'out'); b.classList.remove('out'); b.classList.add('on');
+    setTimeout(() => a.classList.remove('out'), 700);
+  }, 2200);
+})();
+// profile clip: each entry is [frame, turn, tilt] measured from the video and checked by eye (the blink at frame 223 is left out) (turn: -1 left to 1 right as seen, tilt: -1 down to 1 up).
+// Every 3rd frame is decoded once into memory, then the one closest to where the mouse is gets drawn.
+(() => {
+  const cv = document.querySelector('.look'); if (!cv) return;
+  const LOOK = [[1,0.05,0.04],[4,0.06,0.11],[7,0.09,0.14],[10,0.16,0.21],[13,0.23,0.34],[16,0.28,0.41],[19,0.32,0.45],[22,0.36,0.5],[25,0.41,0.57],[28,0.47,0.63],[31,0.52,0.71],[34,0.58,0.74],[37,0.63,0.76],[40,0.67,0.75],[43,0.7,0.72],[46,0.72,0.73],[49,0.75,0.74],[52,0.78,0.81],[55,0.83,0.8],[58,0.87,0.72],[61,0.89,0.63],[64,0.92,0.51],[67,0.95,0.42],[70,0.95,0.31],[73,0.96,0.21],[76,0.96,0.14],[79,0.97,0.08],[82,0.99,0.07],[85,0.99,0.1],[88,0.98,0.14],[91,0.94,0.2],[94,0.85,0.3],[97,0.73,0.34],[100,0.66,0.4],[103,0.6,0.44],[106,0.55,0.45],[109,0.5,0.49],[112,0.45,0.58],[115,0.3,0.6],[118,0.13,0.57],[121,0.02,0.52],[124,-0.11,0.58],[127,-0.21,0.65],[130,-0.27,0.7],[133,-0.36,0.81],[136,-0.48,0.89],[139,-0.54,0.94],[142,-0.57,0.98],[145,-0.67,0.29],[148,-0.6,0.5],[151,-0.7,0.17],[154,-0.69,0.13],[157,-0.69,0.18],[160,-0.69,0.23],[163,-0.73,0.16],[166,-0.77,0.12],[169,-0.84,0.14],[172,-0.86,0.16],[175,-0.89,0.07],[178,-0.95,0],[181,-0.91,0],[184,-0.85,-0.4],[187,-0.75,-0.6],[190,-0.7,-0.7],[193,-0.65,-0.75],[196,-0.6,-0.85],[199,-0.5,-0.9],[202,-0.5,-0.9],[205,-0.5,-0.9],[208,-0.5,-0.85],[211,-0.45,-0.6],[214,-0.5,-0.85],[217,-0.5,-0.9],[220,-0.5,-0.9],[226,-0.4,0],[229,-0.35,0],[232,-0.4,-0.2],[235,-0.35,0],[238,-0.3,0.05]];
+  const ctx = cv.getContext('2d'), frames = [], v = document.createElement('video');
+  v.src = 'videos/look.mp4'; v.muted = true; v.playsInline = true; v.preload = 'auto';
+  let cur = [0, 0], aim = [0, 0], shown = '', loading = false, head = 0, fade = null, last = performance.now();
+  const crop = () => { const r = cv.getBoundingClientRect(), a = r.width / r.height, sh = 1080 / 1.25, sw = Math.min(1916, sh * a); return [(1916 - sw) / 2, 0, sw, sh]; };
+  const fit = () => { const r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio, 1.5); cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); shown = -1; };
+  async function load() {
+    if (loading) return; loading = true; fit();
+    await new Promise(r => v.readyState >= 1 ? r() : v.addEventListener('loadedmetadata', r, { once: true }));
+    const [sx, sy, sw, sh] = crop(), w = Math.min(cv.width, 640), h = Math.round(w * sh / sw);
+    for (const [f] of LOOK) {
+      v.currentTime = (f + .5) / 24; await new Promise(r => v.addEventListener('seeked', r, { once: true }));
+      frames.push(await createImageBitmap(v, sx, sy, sw, sh, { resizeWidth: w, resizeHeight: h }));
+      if (frames.length === 1) paint();
+    }
+  }
+  // draws the playhead: two neighbouring frames crossfaded, or a short crossfade straight to a far away frame
+  const paint = () => {
+    const i0 = Math.min(Math.floor(head), frames.length - 1), i1 = Math.min(i0 + 1, frames.length - 1), f = head - i0;
+    const key = fade ? `${i0}>${fade.to}:${fade.t.toFixed(2)}` : `${i0}:${f.toFixed(2)}`;
+    if (key === shown || !frames[i0]) return; shown = key;
+    ctx.globalAlpha = 1; ctx.drawImage(frames[i0], 0, 0, cv.width, cv.height);
+    if (fade) { ctx.globalAlpha = fade.t; ctx.drawImage(frames[fade.to], 0, 0, cv.width, cv.height); }
+    else if (f > .01 && frames[i1]) { ctx.globalAlpha = f; ctx.drawImage(frames[i1], 0, 0, cv.width, cv.height); }
+    ctx.globalAlpha = 1;
+  };
+  // mouse anywhere on the page sets where he should look, relative to his face
+  addEventListener('pointermove', e => {
+    const r = cv.getBoundingClientRect(), fx = r.left + r.width / 2, fy = r.top + r.height * .4;
+    aim = [Math.max(-1, Math.min(1, (e.clientX - fx) / (innerWidth * .35))), Math.max(-1, Math.min(1, -(e.clientY - fy) / (innerHeight * .35)))];
+  });
+  document.addEventListener('pointerleave', () => aim = [0, 0]);
+  (function tick() {
+    if (document.getElementById('p-about').classList.contains('open')) {
+      if (!loading) load();
+      const now = performance.now(), dt = Math.min(.05, (now - last) / 1000); last = now;
+      const k = 1 - Math.exp(-dt * 6);   // pointer smoothing, same feel at any frame rate
+      cur = [cur[0] + (aim[0] - cur[0]) * k, cur[1] + (aim[1] - cur[1]) * k];
+      // best matching frame, preferring ones near the playhead so he turns through the real motion
+      let best = 0, bd = Infinity;
+      for (let i = 0; i < frames.length; i++) { const d = (LOOK[i][1] - cur[0]) ** 2 + (LOOK[i][2] - cur[1]) ** 2 * .8 + Math.abs(i - head) * .0004; if (d < bd) { bd = d; best = i; } }
+      if (fade) {
+        fade.t = Math.min(1, fade.t + dt / .35);
+        if (fade.t >= 1) { head = fade.to; fade = null; }
+      } else if (Math.abs(best - head) > 16) fade = { to: best, t: 0 };   // far along the clip: crossfade instead of replaying it
+      else {
+        const diff = best - head, step = Math.min(Math.abs(diff), Math.max(4, Math.abs(diff) * 5) * dt);
+        head += Math.sign(diff) * step;
+      }
+      if (frames.length) paint();
+    }
+    requestAnimationFrame(tick);
+  })();
+  addEventListener('resize', () => { if (frames.length) { fit(); paint(); } });
 })();
 document.querySelectorAll('.bx[data-go]').forEach(b => b.onclick = () => document.querySelector(`.dock [data-p="${b.dataset.go}"]`).click());
 document.getElementById('p-about').addEventListener('click', e => { if (e.target.classList.contains('bento') || e.target.id === 'p-about') document.querySelector('.dock [data-p="about"]').click(); });
@@ -780,13 +862,15 @@ addEventListener('keydown', e => { if (e.key === 'Escape') { closeLb(); document
   }, { passive: true });
 })();
 
-/* ── Globe loader: cards gather into a spinning globe, then fly out into their wall tiles ── */
+/* ── Loader: one square flips through the covers, unfolds into a column, then fly out into their wall tiles ── */
 let entering = document.documentElement.classList.contains('loading');
 const loaderEl = document.getElementById('loader');
 function finishEntrance() {
   entering = false;
   document.documentElement.classList.remove('loading', 'loader-ui');
-  loaderEl.remove(); document.querySelector('.flyers')?.remove();
+  loaderEl.remove();
+  const fl = document.querySelector('.flyers');
+  if (fl) { fl.style.transition = 'opacity .45s'; requestAnimationFrame(() => fl.style.opacity = 0); setTimeout(() => fl.remove(), 500); }
   setTimeout(() => intro.classList.add('gone'), 2600);
 }
 if (!entering) finishEntrance();
@@ -801,74 +885,113 @@ else {
   const capT = setInterval(() => { capTick++; const rev = Math.floor((capTick % 44) / 2.4);
     cap.textContent = [...CAP].map((c, i) => c === ' ' || i < rev ? c : GL[(Math.random() * GL.length) | 0]).join(''); }, 55);
 
-  let gcards = [], picks = [], rot = 0, spinning = true, done = false, t0 = performance.now(), shown = 0;
-  const G = 110;  // cards on the globe; the first ones are the tiles on screen, the rest are decoration
+  let gcards = [], picks = [], done = false, unfolded = false, t0 = performance.now(), shown = 0;
+  const G = 8;   // tiles in the column; each one flies to a tile on the wall
 
-  // wait one frame so the wall has worked out which tiles are on screen
-  requestAnimationFrame(() => requestAnimationFrame(() => {
+  // wait a moment so the wall has worked out which tiles are on screen (timers, not frames, so a background tab still loads)
+  setTimeout(() => {
     picks = tiles.filter(t => t.vis).sort((a, b) => b.s - a.s).slice(0, G);
-    const R = Math.min(innerWidth, innerHeight) * (innerWidth < 640 ? .38 : .33);
-    const assets = [];
+    const H = Math.round(Math.min(74, (innerHeight - 150) / G - 8)), W = Math.round(H * TW / TH);   // same shape as the wall tiles
+    globe.style.setProperty('--w', W + 'px'); globe.style.setProperty('--h', H + 'px'); globe.dataset.w = W; globe.dataset.h = H;
+    const covers = CLIPS.map(c => `videos/covers/${c.preview}.jpg`);
+    const assets = covers.map(src => new Promise(res => { const im = new Image(); im.onload = im.onerror = res; im.src = src; }));
     for (let k = 0; k < G; k++) {
-      const i = k < picks.length ? picks[k].i : (k * 7) % CLIPS.length;
-      const cover = `videos/covers/${CLIPS[i].preview}.jpg`;
+      const i = k < picks.length ? picks[k].i : (k * 5) % CLIPS.length;
       const el = document.createElement('div');
-      el.className = 'gcard'; el.style.backgroundImage = `url("${cover}")`;
-      // even spread over the sphere (Fibonacci lattice)
-      const y = 1 - 2 * (k + .5) / G, lat = Math.asin(y) * 180 / Math.PI, lon = k * 137.508;
-      el.dataset.lon = lon;
-      el.dataset.to = `rotateY(${lon}deg) rotateX(${lat}deg) translateZ(${R}px)`;
-      el.style.transitionDelay = `${Math.round(k * 1700 / G)}ms`;   // whole globe gathers in under 2s
+      el.className = 'gcard flip'; el.style.backgroundImage = el.dataset.bg = `url("${covers[i]}")`;
+      el.style.zIndex = k ? 0 : 1; el.style.opacity = k ? 0 : 1;
+      el.dataset.y = (k - (G - 1) / 2) * (H + 8);
       globe.append(el); gcards.push(el);
-      assets.push(new Promise(res => { const im = new Image(); im.onload = im.onerror = res; im.src = cover; }));
     }
-    requestAnimationFrame(() => gcards.forEach(el => { el.style.transform = el.dataset.to; el.style.opacity = 1; }));
-    // real progress: globe covers + the preview videos of the tiles that will be on screen
+    // flipbook: the front square flicks through every cover and slowly grows
+    const front = gcards[0]; let f = 0;
+    setTimeout(() => front.style.transform = 'scale(1)', 30);
+    const flick = setInterval(() => { if (unfolded) return clearInterval(flick); front.style.backgroundImage = `url("${covers[f++ % covers.length]}")`; }, 85);
+    // real progress: all covers + the preview videos of the tiles that will be on screen
     let coversDone = 0; assets.forEach(p => p.then(() => coversDone++));
     const need = [...new Set(picks.map(t => t.i))].map(i => vids[i]);
     const poll = setInterval(() => {
       if (done) return clearInterval(poll);
-      const ready = coversDone + need.filter(v => v.readyState >= 2).length, total = G + need.length;
-      const pct = Math.floor(ready / total * 100);
-      if (pct > shown) { shown = pct; paint(pct); }
+      const ready = coversDone + need.filter(v => v.readyState >= 2).length, total = covers.length + need.length;
       const elapsed = performance.now() - t0;
-      if ((ready >= total && elapsed > 2400) || elapsed > 10000) { if (shown < 100) paint(100); clearInterval(poll); setTimeout(handoff, 350); }
-    }, 100);
-  }));
+      // count up through the numbers: follow real progress, but never faster than 0 to 100 in about 2s
+      const target = Math.min(Math.floor(ready / total * 100), Math.floor(elapsed / 2000 * 100), 100);
+      if (target > shown) { shown = target; paint(shown); }
+      if (shown >= 100 || elapsed > 10000) { if (shown < 100) paint(100); clearInterval(poll); setTimeout(unfold, 250); }
+    }, 60);
+  }, 50);
 
-  // spin
-  let last = performance.now();
-  (function spin(now) {
-    if (!spinning) return;
-    rot += (now - last) / 1000 * 26; last = now;
-    globe.style.transform = `rotateX(-14deg) rotateY(${rot}deg)`;
-    requestAnimationFrame(spin);
-  })(last);
-
+  // the square settles on the first tile and the rest slide out of it into a column
+  function unfold() {
+    unfolded = true;
+    gcards[0].style.backgroundImage = gcards[0].dataset.bg;
+    // every screen starts hidden behind the front one, then slides out from behind it while the stack scales up
+    gcards.forEach((el, k) => {
+      el.classList.remove('flip'); el.style.zIndex = G - k;
+      el.style.transition = 'none'; el.style.transform = k ? 'scale(.82)' : 'scale(.6)'; el.style.opacity = 1;
+    });
+    globe.getBoundingClientRect();
+    gcards.forEach((el, k) => {
+      el.style.transition = '';
+      el.style.transitionDelay = `${k * 70}ms`;
+      el.style.transform = `translateY(${el.dataset.y}px) scale(1)`;
+    });
+    setTimeout(spread, 1000 + G * 70);
+  }
+  // then more columns slide out left and right from behind the centre column, with the same motion
+  function spread() {
+    loaderEl.classList.add('spread');   // side words, tagline, counter and skip fade out
+    const W = +globe.dataset.w, H = +globe.dataset.h, side = Math.max(1, Math.min(3, Math.floor((innerWidth / 2 - W / 2 - 20) / (W + 10))));
+    const add = [];
+    for (let c = 1; c <= side; c++) for (const dir of [-1, 1]) for (let r = 0; r < G; r++) {
+      const el = document.createElement('div');
+      el.className = 'gcard'; el.style.backgroundImage = `url("videos/covers/${CLIPS[(r * 3 + c * 7 + (dir > 0 ? 5 : 0)) % CLIPS.length].preview}.jpg")`;
+      el.style.zIndex = -c; el.style.transition = 'none';   // outer columns sit behind inner ones
+      el.style.transform = `translate(0px,${gcards[r].dataset.y}px) scale(.9)`;   // hidden behind the centre screen of its row
+      el.dataset.x = dir * c * (W + 10); el.dataset.y = gcards[r].dataset.y; el.dataset.c = c; el.dataset.r = r;
+      globe.append(el); add.push(el);
+    }
+    globe.getBoundingClientRect();
+    add.forEach(el => {
+      el.style.transition = ''; el.style.transitionDelay = `${(el.dataset.c - 1) * 200}ms`; el.style.transitionDuration = '.7s';   // one column at a time, each sliding out from behind the columns already there
+      el.style.transform = `translate(${el.dataset.x}px,${el.dataset.y}px) scale(1)`;
+    });
+    gcards.push(...add);
+    setTimeout(handoff, 750 + side * 200);
+  }
   function handoff() {
-    if (done) return; done = true; spinning = false; clearInterval(capT);
+    if (done) return; done = true; clearInterval(capT);
     loaderEl.classList.add('out');
     document.documentElement.classList.remove('loader-ui');   // logo shrinks into the header, dock rises
     const fly = document.createElement('div'); fly.className = 'flyers'; document.body.append(fly);
+    // match every screen in the flat grid to the nearest tile on the curved wall, so the grid bends into the wall
+    const cx = innerWidth / 2, cy = innerHeight / 2, free = tiles.filter(t => t.vis).map(t => { const b = t.el.getBoundingClientRect(); return { t, x: b.left + b.width / 2, y: b.top + b.height / 2 }; });
+    const centre = el => { const b = el.getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; };
+    const order = gcards.map(el => ({ el, p: centre(el) })).sort((a, b) => Math.hypot(a.p[0] - cx, a.p[1] - cy) - Math.hypot(b.p[0] - cx, b.p[1] - cy));
+    const match = new Map();
+    order.forEach(({ el, p }) => {
+      let best = -1, bd = Infinity;
+      free.forEach((f, j) => { const d = Math.hypot(f.x - p[0], f.y - p[1]); if (d < bd) { bd = d; best = j; } });
+      if (best >= 0) match.set(el, free.splice(best, 1)[0].t);
+    });
     let last = 0;
-    gcards.forEach((el, k) => {
-      const tile = picks[k];
+    order.forEach(({ el }, k) => {
+      const tile = match.get(el);
       if (!tile) { el.style.transitionDelay = '0ms'; el.style.opacity = 0; return; }
       const a = el.getBoundingClientRect();
-      const front = Math.cos((rot + +el.dataset.lon) * Math.PI / 180) > 0;
       const f = document.createElement('div');
       f.className = 'flyer'; f.style.width = TW + 'px'; f.style.height = TH + 'px';
-      f.style.backgroundImage = el.style.backgroundImage;
+      f.style.backgroundImage = `url("videos/covers/${CLIPS[tile.i].preview}.jpg")`;   // the cover of the tile it lands on, so the landing has no swap
       fly.append(f); el.style.visibility = 'hidden';
       const from = `translate3d(${a.left + a.width / 2 - TW / 2}px,${a.top + a.height / 2 - TH / 2}px,0) scale(${a.width / TW})`;
-      const delay = k * 16; last = Math.max(last, delay);
-      f.animate([{ transform: from, opacity: front ? 1 : 0, borderRadius: '12px' },
+      const delay = 0; last = 0;   // the whole grid expands together into the wall
+      f.animate([{ transform: from, opacity: 1, borderRadius: `${8 * TW / a.width}px` },
                  { transform: tile.el.style.transform, opacity: +tile.el.style.opacity || 1, borderRadius: '26px' }],
-                { duration: 1150, delay, easing: 'cubic-bezier(.65,0,.25,1)', fill: 'forwards' });
+                { duration: 1500, delay, easing: 'cubic-bezier(.76,0,.24,1)', fill: 'both' });
     });
-    setTimeout(finishEntrance, last + 1200);
+    setTimeout(finishEntrance, last + 1550);
   }
-  function skip() { if (!entering) return; done = true; spinning = false; clearInterval(capT); finishEntrance(); }
+  function skip() { if (!entering) return; done = true; clearInterval(capT); finishEntrance(); }
   loaderEl.querySelector('.ld-skip').onclick = skip;
   addEventListener('keydown', e => { if (entering && (e.key === 'Escape' || e.key === 'Tab')) skip(); });
 }
