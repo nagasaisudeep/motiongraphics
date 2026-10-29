@@ -787,61 +787,58 @@ document.querySelectorAll('.marquee').forEach(m => {
     setTimeout(() => a.classList.remove('out'), 700);
   }, 2200);
 })();
-// profile clip: each entry is [frame, turn, tilt] measured from the video and checked by eye (the blink at frame 223 is left out) (turn: -1 left to 1 right as seen, tilt: -1 down to 1 up).
-// Every 3rd frame is decoded once into memory, then the one closest to where the mouse is gets drawn.
+// profile clip: the head turns from his left, through the centre, to his right. Each entry is [video frame, turn],
+// turn measured from the video: -1 looking left as seen, 1 looking right. Frames run in turning order, so the playhead only
+// ever moves between neighbouring poses (blink and a back and forth stretch are left out).
 (() => {
   const cv = document.querySelector('.look'); if (!cv) return;
-  const LOOK = [[1,0.05,0.04],[4,0.06,0.11],[7,0.09,0.14],[10,0.16,0.21],[13,0.23,0.34],[16,0.28,0.41],[19,0.32,0.45],[22,0.36,0.5],[25,0.41,0.57],[28,0.47,0.63],[31,0.52,0.71],[34,0.58,0.74],[37,0.63,0.76],[40,0.67,0.75],[43,0.7,0.72],[46,0.72,0.73],[49,0.75,0.74],[52,0.78,0.81],[55,0.83,0.8],[58,0.87,0.72],[61,0.89,0.63],[64,0.92,0.51],[67,0.95,0.42],[70,0.95,0.31],[73,0.96,0.21],[76,0.96,0.14],[79,0.97,0.08],[82,0.99,0.07],[85,0.99,0.1],[88,0.98,0.14],[91,0.94,0.2],[94,0.85,0.3],[97,0.73,0.34],[100,0.66,0.4],[103,0.6,0.44],[106,0.55,0.45],[109,0.5,0.49],[112,0.45,0.58],[115,0.3,0.6],[118,0.13,0.57],[121,0.02,0.52],[124,-0.11,0.58],[127,-0.21,0.65],[130,-0.27,0.7],[133,-0.36,0.81],[136,-0.48,0.89],[139,-0.54,0.94],[142,-0.57,0.98],[145,-0.67,0.29],[148,-0.6,0.5],[151,-0.7,0.17],[154,-0.69,0.13],[157,-0.69,0.18],[160,-0.69,0.23],[163,-0.73,0.16],[166,-0.77,0.12],[169,-0.84,0.14],[172,-0.86,0.16],[175,-0.89,0.07],[178,-0.95,0],[181,-0.91,0],[184,-0.85,-0.4],[187,-0.75,-0.6],[190,-0.7,-0.7],[193,-0.65,-0.75],[196,-0.6,-0.85],[199,-0.5,-0.9],[202,-0.5,-0.9],[205,-0.5,-0.9],[208,-0.5,-0.85],[211,-0.45,-0.6],[214,-0.5,-0.85],[217,-0.5,-0.9],[220,-0.5,-0.9],[226,-0.4,0],[229,-0.35,0],[232,-0.4,-0.2],[235,-0.35,0],[238,-0.3,0.05]];
+  const LOOK = [[232,-1.0],[230,-0.966],[228,-0.892],[226,-0.824],[224,-0.773],[186,-0.687],[184,-0.67],[182,-0.653],[180,-0.636],[178,-0.597],[176,-0.551],[174,-0.523],[172,-0.506],[170,-0.472],[168,-0.438],[160,-0.398],[158,-0.307],[156,-0.216],[154,-0.125],[0,0.05],[6,0.078],[8,0.111],[10,0.133],[12,0.156],[14,0.172],[16,0.194],[18,0.222],[30,0.494],[32,0.567],[34,0.606],[36,0.628],[38,0.65],[40,0.683],[42,0.728],[44,0.761],[46,0.789],[48,0.828],[50,0.867],[52,0.9],[54,0.933],[56,0.956],[60,0.978],[64,0.994],[68,1.0]];
   const ctx = cv.getContext('2d'), frames = [], v = document.createElement('video');
   v.src = 'videos/look.mp4'; v.muted = true; v.playsInline = true; v.preload = 'auto';
-  let cur = [0, 0], aim = [0, 0], shown = '', loading = false, head = 0, fade = null, last = performance.now();
+  const mid = LOOK.findIndex(e => e[1] >= 0);   // looking straight ahead
+  let aim = 0, head = mid, shown = '', loading = false, last = performance.now();
   const crop = () => { const r = cv.getBoundingClientRect(), a = r.width / r.height, sh = 1080 / 1.25, sw = Math.min(1916, sh * a); return [(1916 - sw) / 2, 0, sw, sh]; };
-  const fit = () => { const r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio, 1.5); cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); shown = -1; };
+  const fit = () => { const r = cv.getBoundingClientRect(), d = Math.min(devicePixelRatio, 1.5); cv.width = Math.round(r.width * d); cv.height = Math.round(r.height * d); shown = ''; };
   async function load() {
     if (loading) return; loading = true; fit();
     await new Promise(r => v.readyState >= 1 ? r() : v.addEventListener('loadedmetadata', r, { once: true }));
     const [sx, sy, sw, sh] = crop(), w = Math.min(cv.width, 640), h = Math.round(w * sh / sw);
-    for (const [f] of LOOK) {
-      v.currentTime = (f + .5) / 24; await new Promise(r => v.addEventListener('seeked', r, { once: true }));
-      frames.push(await createImageBitmap(v, sx, sy, sw, sh, { resizeWidth: w, resizeHeight: h }));
-      if (frames.length === 1) paint();
+    // straight ahead first so the card shows something at once, then the rest
+    const order = [mid, ...LOOK.keys()].filter((i, k, a) => a.indexOf(i) === k);
+    for (const i of order) {
+      v.currentTime = (LOOK[i][0] + .5) / 24; await new Promise(r => v.addEventListener('seeked', r, { once: true }));
+      frames[i] = await createImageBitmap(v, sx, sy, sw, sh, { resizeWidth: w, resizeHeight: h });
+      shown = ''; paint();
     }
   }
-  // draws the playhead: two neighbouring frames crossfaded, or a short crossfade straight to a far away frame
+  // the playhead sits between two neighbouring poses; blend them so the turn has no steps
   const paint = () => {
-    const i0 = Math.min(Math.floor(head), frames.length - 1), i1 = Math.min(i0 + 1, frames.length - 1), f = head - i0;
-    const key = fade ? `${i0}>${fade.to}:${fade.t.toFixed(2)}` : `${i0}:${f.toFixed(2)}`;
-    if (key === shown || !frames[i0]) return; shown = key;
-    ctx.globalAlpha = 1; ctx.drawImage(frames[i0], 0, 0, cv.width, cv.height);
-    if (fade) { ctx.globalAlpha = fade.t; ctx.drawImage(frames[fade.to], 0, 0, cv.width, cv.height); }
-    else if (f > .01 && frames[i1]) { ctx.globalAlpha = f; ctx.drawImage(frames[i1], 0, 0, cv.width, cv.height); }
-    ctx.globalAlpha = 1;
+    const i0 = Math.floor(head), i1 = Math.min(i0 + 1, LOOK.length - 1), f = head - i0;
+    const a = frames[i0] || frames[mid], b = frames[i1];
+    const key = `${i0}:${f.toFixed(3)}:${!!frames[i0]}:${!!b}`;
+    if (!a || key === shown) return; shown = key;
+    ctx.globalAlpha = 1; ctx.drawImage(a, 0, 0, cv.width, cv.height);
+    if (b && f > .002) { ctx.globalAlpha = f; ctx.drawImage(b, 0, 0, cv.width, cv.height); ctx.globalAlpha = 1; }
   };
-  // mouse anywhere on the page sets where he should look, relative to his face
+  // where along the strip the pose matches a given turn
+  const indexFor = t => {
+    if (t <= LOOK[0][1]) return 0;
+    for (let i = 0; i < LOOK.length - 1; i++) if (t <= LOOK[i + 1][1]) return i + (t - LOOK[i][1]) / (LOOK[i + 1][1] - LOOK[i][1]);
+    return LOOK.length - 1;
+  };
+  // mouse anywhere on the page: left of his face he looks left, right of it he looks right
   addEventListener('pointermove', e => {
-    const r = cv.getBoundingClientRect(), fx = r.left + r.width / 2, fy = r.top + r.height * .4;
-    aim = [Math.max(-1, Math.min(1, (e.clientX - fx) / (innerWidth * .35))), Math.max(-1, Math.min(1, -(e.clientY - fy) / (innerHeight * .35)))];
+    const r = cv.getBoundingClientRect();
+    aim = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (innerWidth * .4)));
   });
-  document.addEventListener('pointerleave', () => aim = [0, 0]);
+  document.addEventListener('pointerleave', () => aim = 0);
   (function tick() {
     if (document.getElementById('p-about').classList.contains('open')) {
       if (!loading) load();
       const now = performance.now(), dt = Math.min(.05, (now - last) / 1000); last = now;
-      const k = 1 - Math.exp(-dt * 6);   // pointer smoothing, same feel at any frame rate
-      cur = [cur[0] + (aim[0] - cur[0]) * k, cur[1] + (aim[1] - cur[1]) * k];
-      // best matching frame, preferring ones near the playhead so he turns through the real motion
-      let best = 0, bd = Infinity;
-      for (let i = 0; i < frames.length; i++) { const d = (LOOK[i][1] - cur[0]) ** 2 + (LOOK[i][2] - cur[1]) ** 2 * .8 + Math.abs(i - head) * .0004; if (d < bd) { bd = d; best = i; } }
-      if (fade) {
-        fade.t = Math.min(1, fade.t + dt / .35);
-        if (fade.t >= 1) { head = fade.to; fade = null; }
-      } else if (Math.abs(best - head) > 16) fade = { to: best, t: 0 };   // far along the clip: crossfade instead of replaying it
-      else {
-        const diff = best - head, step = Math.min(Math.abs(diff), Math.max(4, Math.abs(diff) * 5) * dt);
-        head += Math.sign(diff) * step;
-      }
-      if (frames.length) paint();
-    }
+      head += (indexFor(aim) - head) * (1 - Math.exp(-dt * 5));   // eases the same at any frame rate
+      paint();
+    } else last = performance.now();
     requestAnimationFrame(tick);
   })();
   addEventListener('resize', () => { if (frames.length) { fit(); paint(); } });
