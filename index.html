@@ -299,7 +299,16 @@ body:has(.panel.open) .top::before,:root.vertical-view .top.in::before{content:"
 .acts button:hover{background:rgba(255,255,255,.2)}
 .acts svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .acts .on svg{fill:#fff}
-.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);z-index:60;padding:12px 20px;border-radius:12px;background:#fff;color:#000;font-size:14px;font-weight:600;opacity:0;transition:.3s;pointer-events:none}
+.cicon.c-copy,.b-contact .cicon.c-copy{width:auto;min-width:42px;padding:0 11px;display:flex;align-items:center;justify-content:center;transition:background .2s,padding .35s}
+/* the phone box opens up into the number with a copy icon */
+.c-copy .ph-ico{flex:none;transition:width .35s cubic-bezier(.2,.8,.2,1),opacity .25s}
+.ph-num{display:flex;align-items:center;gap:8px;max-width:0;opacity:0;overflow:hidden;white-space:nowrap;font-size:13px;font-weight:600;
+  transition:max-width .35s cubic-bezier(.2,.8,.2,1),opacity .25s}
+.c-copy .ph-num svg{width:14px;height:14px;flex:none}
+.cicon.c-copy:hover,.cicon.c-copy:focus-visible{padding:0 14px}
+.c-copy:hover .ph-ico,.c-copy:focus-visible .ph-ico{width:0;opacity:0}
+.c-copy:hover .ph-num,.c-copy:focus-visible .ph-num{max-width:170px;opacity:1}
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);z-index:90;padding:12px 20px;border-radius:12px;background:#fff;color:#000;font-size:14px;font-weight:600;opacity:0;transition:.3s;pointer-events:none}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .vside{min-height:0;overflow:auto;margin-top:-30px}
 /* scrolling still works, without a visible scrollbar */
@@ -365,7 +374,7 @@ body:has(.panel.open) .top::before,:root.vertical-view .top.in::before{content:"
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches && location.hash.length < 2 && !location.search && (reload || !fromSite)) document.documentElement.classList.add('loading', 'loader-ui'); }</script>
 <div id="loader" role="status" aria-label="Loading reels">
   <div class="g-stage"><div class="globe" id="globe"></div></div>
-  <span class="ld-side l" aria-hidden="true">MOTION DESIGN</span><span class="ld-side r" aria-hidden="true">AI VIDEO</span>
+  <span class="ld-side l" aria-hidden="true">MOTION DESIGN</span><span class="ld-side r" aria-hidden="true">REELS</span>
   <p class="ld-tag" aria-hidden="true">Launch films and product motion for SaaS startups and brands.</p>
   <button class="ld-skip">Skip intro</button>
   <span class="ld-cap" aria-hidden="true">LOADING</span>
@@ -412,8 +421,8 @@ body:has(.panel.open) .top::before,:root.vertical-view .top.in::before{content:"
 
     <a class="cicon c-in" href="https://www.linkedin.com/in/sudeep-mannava-49bb0a256/" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 9h3v11h-3zM6 3.5a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6zM10 9h2.9v1.5h.1c.4-.8 1.4-1.7 3-1.7 3.2 0 3.8 2.1 3.8 4.8V20h-3v-5.6c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V20h-3z"/></svg></a>
     <a class="cicon c-wa" href="https://wa.me/917989193704" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20l1.2-3.8A8 8 0 1 1 8 19z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 1c-1-.4-2.6-2-3-3l1-1-1-2z" fill="currentColor" stroke="none"/></svg></a>
-    <a class="cicon c-ph" href="tel:+917989193704" aria-label="Call +91 79891 93704"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6.6 3.5h3l1.5 4-2 1.3a11 11 0 0 0 6.1 6.1l1.3-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z"/></svg></a>
-    <a class="cicon c-mail" href="mailto:nagasaisudeep@gmail.com" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></svg></a>
+    <button class="cicon c-ph c-copy" type="button" data-copy="7989193704" data-msg="Phone number copied" aria-label="Copy phone number +91 7989193704"><svg class="ph-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6.6 3.5h3l1.5 4-2 1.3a11 11 0 0 0 6.1 6.1l1.3-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z"/></svg><span class="ph-num" aria-hidden="true">+91 7989193704<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></span></button>
+    <button class="cicon c-mail c-clip" type="button" data-copy="nagasaisudeep@gmail.com" data-msg="Email copied" aria-label="Copy email nagasaisudeep@gmail.com"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></svg></button>
       <a class="ccall" href="https://calendly.com/nagasaisudeep/30min" target="_blank" rel="noopener">Book a call</a>
     </div>
   </div>
@@ -433,10 +442,10 @@ body:has(.panel.open) .top::before,:root.vertical-view .top.in::before{content:"
     <div><h2>Let's work together</h2><a href="mailto:nagasaisudeep@gmail.com">nagasaisudeep@gmail.com</a></div>
   </div>
   <div class="cacts">
-    <a class="cicon c-mail" href="mailto:nagasaisudeep@gmail.com" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></svg></a>
+    <button class="cicon c-mail c-clip" type="button" data-copy="nagasaisudeep@gmail.com" data-msg="Email copied" aria-label="Copy email nagasaisudeep@gmail.com"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></svg></button>
     <a class="cicon c-in" href="https://www.linkedin.com/in/sudeep-mannava-49bb0a256/" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 9h3v11h-3zM6 3.5a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6zM10 9h2.9v1.5h.1c.4-.8 1.4-1.7 3-1.7 3.2 0 3.8 2.1 3.8 4.8V20h-3v-5.6c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V20h-3z"/></svg></a>
     <a class="cicon c-wa" href="https://wa.me/917989193704" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20l1.2-3.8A8 8 0 1 1 8 19z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 1c-1-.4-2.6-2-3-3l1-1-1-2z" fill="currentColor" stroke="none"/></svg></a>
-    <a class="cicon c-ph" href="tel:+917989193704" aria-label="Call +91 79891 93704"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6.6 3.5h3l1.5 4-2 1.3a11 11 0 0 0 6.1 6.1l1.3-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z"/></svg></a>
+    <button class="cicon c-ph c-copy" type="button" data-copy="7989193704" data-msg="Phone number copied" aria-label="Copy phone number +91 7989193704"><svg class="ph-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6.6 3.5h3l1.5 4-2 1.3a11 11 0 0 0 6.1 6.1l1.3-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z"/></svg><span class="ph-num" aria-hidden="true">+91 7989193704<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></span></button>
     <a class="ccall" href="https://calendly.com/nagasaisudeep/30min" target="_blank" rel="noopener">Book a call</a>
   </div>
 </div></section>
@@ -745,6 +754,11 @@ acts.querySelector('.share').onclick = async () => {
   try { await navigator.clipboard.writeText(url); toast('Link copied'); } catch { toast(url); }
 };
 const toastEl = document.getElementById('toast'); let toastT;
+// phone and mail icons copy their number or address
+document.querySelectorAll('.c-copy,.c-clip').forEach(el => el.addEventListener('click', async e => {
+  e.stopPropagation();
+  try { await navigator.clipboard.writeText(el.dataset.copy); toast(el.dataset.msg); } catch { toast(el.dataset.copy); }
+}));
 function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), 1800); }
 // open a shared link straight into its project
 const fromReels = document.documentElement.classList.contains('from-reels');
@@ -807,9 +821,25 @@ document.querySelectorAll('.marquee').forEach(m => {
     const order = [mid, ...LOOK.keys()].filter((i, k, a) => a.indexOf(i) === k);
     for (const i of order) {
       v.currentTime = (LOOK[i][0] + .5) / 24; await new Promise(r => v.addEventListener('seeked', r, { once: true }));
-      frames[i] = await createImageBitmap(v, sx, sy, sw, sh, { resizeWidth: w, resizeHeight: h });
+      frames[i] = await cutout(await createImageBitmap(v, sx, sy, sw, sh, { resizeWidth: w, resizeHeight: h }));
       shown = ''; paint();
     }
+  }
+  // makes the black backdrop transparent: flood fill from the edges through near black pixels, so dark hair and the suit stay
+  const work = document.createElement('canvas'), wc = work.getContext('2d', { willReadFrequently: true });
+  async function cutout(bmp) {
+    const w = work.width = bmp.width, h = work.height = bmp.height; wc.drawImage(bmp, 0, 0);
+    const im = wc.getImageData(0, 0, w, h), d = im.data, seen = new Uint8Array(w * h), stack = [];
+    const dark = p => d[p * 4] + d[p * 4 + 1] + d[p * 4 + 2] < 42;
+    for (let x = 0; x < w; x++) stack.push(x, (h - 1) * w + x);
+    for (let y = 0; y < h; y++) stack.push(y * w, y * w + w - 1);
+    while (stack.length) {
+      const p = stack.pop(); if (seen[p] || !dark(p)) continue; seen[p] = 1; d[p * 4 + 3] = 0;
+      const x = p % w; if (x > 0) stack.push(p - 1); if (x < w - 1) stack.push(p + 1); if (p >= w) stack.push(p - w); if (p < w * (h - 1)) stack.push(p + w);
+    }
+    // soften the cut edge by one pixel
+    for (let p = 0; p < w * h; p++) if (!seen[p] && ((p % w > 0 && seen[p - 1]) || (p % w < w - 1 && seen[p + 1]) || seen[p - w] || seen[p + w])) d[p * 4 + 3] = 150;
+    wc.putImageData(im, 0, 0); bmp.close(); return createImageBitmap(work);
   }
   // the playhead sits between two neighbouring poses; blend them so the turn has no steps
   const paint = () => {
@@ -817,6 +847,7 @@ document.querySelectorAll('.marquee').forEach(m => {
     const a = frames[i0] || frames[mid], b = frames[i1];
     const key = `${i0}:${f.toFixed(3)}:${!!frames[i0]}:${!!b}`;
     if (!a || key === shown) return; shown = key;
+    ctx.clearRect(0, 0, cv.width, cv.height);
     ctx.globalAlpha = 1; ctx.drawImage(a, 0, 0, cv.width, cv.height);
     if (b && f > .002) { ctx.globalAlpha = f; ctx.drawImage(b, 0, 0, cv.width, cv.height); ctx.globalAlpha = 1; }
   };
