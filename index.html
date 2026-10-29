@@ -140,22 +140,32 @@ html.loading .top{z-index:70}
 .ccall:hover{background:var(--brand);color:#fff}
 
 /* about: bento grid (Noku layout) */
-.about-panel .bento{max-width:1060px;margin:0 auto;padding:96px 20px 130px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:minmax(190px,auto);gap:16px}
-.bx{position:relative;isolation:isolate;overflow:hidden;border-radius:28px;background:#111;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);padding:22px;
+/* whole grid fits one screen: three rows share the height between the name and the menu */
+.about-panel .bento{max-width:1060px;margin:0 auto;height:max(600px,100vh);padding:84px 20px 92px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:minmax(0,1fr) minmax(0,1fr) minmax(0,1.25fr);gap:14px}
+.bx{position:relative;isolation:isolate;overflow:hidden;min-height:0;border-radius:26px;background:#111;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);padding:18px 20px;
   display:flex;flex-direction:column;justify-content:space-between;gap:16px;text-align:left;color:var(--fg);
   opacity:0;transform:translateY(18px);transition:opacity .5s,transform .6s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
 .panel.open .bx{opacity:1;transform:none}
 .panel.open .bx:nth-child(2){transition-delay:.05s}.panel.open .bx:nth-child(3){transition-delay:.1s}.panel.open .bx:nth-child(4){transition-delay:.15s}
 .panel.open .bx:nth-child(5){transition-delay:.2s}.panel.open .bx:nth-child(6){transition-delay:.25s}.panel.open .bx:nth-child(7){transition-delay:.3s}.panel.open .bx:nth-child(8){transition-delay:.35s}
+.bx .tag svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:.85}
 button.bx{cursor:pointer}button.bx:hover{box-shadow:inset 0 0 0 1px var(--brand)}
-.bx .tag{align-self:flex-start;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.08);font-size:12px;font-weight:500}
-.bx h3{font-size:22px;font-weight:500;letter-spacing:-.02em;line-height:1.2}
+.bx .tag{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:6px 12px 6px 10px;border-radius:999px;background:rgba(255,255,255,.08);font-size:12px;font-weight:500}
+.bx h3{font-size:clamp(17px,2.4vh,22px);font-weight:500;letter-spacing:-.02em;line-height:1.2}
 .bx small{display:block;margin-top:6px;color:var(--mute);font-size:13px;line-height:1.5}
 .b-profile{grid-column:span 2;grid-row:span 2}
 .who{display:flex;align-items:center;gap:12px}
 .who img{width:48px;height:48px;border-radius:14px;object-fit:cover}
 .who b{display:block;font-size:18px;font-weight:500}.who small{margin-top:0}
-.pitch{font-size:clamp(22px,2.4vw,30px);line-height:1.25;letter-spacing:-.02em;color:#e9e9e9;margin:0}
+.b-profile{justify-content:flex-start}
+.pitchbox{margin-top:8px}
+.pitch{font-size:clamp(20px,min(2.4vw,3.6vh),32px);line-height:1.15;letter-spacing:-.03em;color:#f2f2f2;margin:0;font-weight:500}
+.b-profile .sub{margin:10px 0 0;color:#a9a9a9;font-size:14px;line-height:1.6;max-width:440px}
+.b-profile .pfoot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.quote{margin:18px 0 0;padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.quote[hidden]{display:none}
+.quote blockquote{margin:0;font-size:15px;line-height:1.5;color:#e6e6e6}
+.quote figcaption{margin-top:8px;font-size:12px;color:var(--mute)}
 .avail{align-self:flex-start;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.08);font-size:13px}
 .avail i{width:8px;height:8px;border-radius:50%;background:#3ddc84;box-shadow:0 0 0 0 rgba(61,220,132,.6);animation:pulse 2s infinite}
 @keyframes pulse{70%{box-shadow:0 0 0 8px rgba(61,220,132,0)}100%{box-shadow:0 0 0 0 rgba(61,220,132,0)}}
@@ -163,19 +173,38 @@ button.bx{cursor:pointer}button.bx:hover{box-shadow:inset 0 0 0 1px var(--brand)
 .b-work .peek{position:absolute;right:-30px;top:26px;width:58%;border-radius:14px;z-index:-1;opacity:.9;transform:rotate(-4deg);
   box-shadow:0 20px 50px rgba(0,0,0,.6);-webkit-mask:linear-gradient(90deg,transparent,#000 30%);mask:linear-gradient(90deg,transparent,#000 30%);transition:transform .5s}
 .b-work:hover .peek{transform:rotate(-2deg) translateY(-4px)}
-.tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.tools span{padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.06);font-size:12px;color:#cfcfcf}
+.b-tools{grid-column:span 2}
+.marquee{margin:14px -20px 2px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;cursor:grab;touch-action:pan-x;padding:0 20px;-webkit-mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.marquee::-webkit-scrollbar{display:none}
+.marquee.drag{cursor:grabbing}
+.track{display:flex;gap:10px;width:max-content}
+.tl img{pointer-events:none}
+.tl{display:flex;align-items:center;gap:9px;padding:6px 12px 6px 6px;border-radius:14px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);white-space:nowrap}
+.tl img{width:28px;height:28px;padding:4px;border-radius:9px;background:rgba(255,255,255,.06);object-fit:contain}
+.tl em{font-style:normal;font-size:13px;color:#d6d6d6}
+/* brand accurate tiles: Adobe icons are full app tiles, single colour marks sit on their brand colour */
+.tl img[src$="bolt.svg"],.tl img[src$="aftereffects.svg"],.tl img[src$="premiere.svg"],.tl img[src$="illustrator.svg"],.tl img[src$="photoshop.svg"]{padding:0;background:none;border-radius:7px}
+.tl img[src$="framer.svg"],.tl img[src$="openai.svg"]{background:#000;padding:6px}
+.tl img[src$="davinci.svg"]{background:#233A51;padding:5px}
+.tl img[src$="cinema4d.svg"]{background:#011A6A;padding:5px}
+.tl img[src$="claude.svg"]{background:#262624;padding:5px}
+.tl img[src$="blender.svg"],.tl img[src$="figma.svg"]{background:#fff;padding:5px}
 .elsewhere{display:grid;grid-template-columns:repeat(2,46px);gap:10px;align-self:center;margin:auto 0}
-.cicon.c-reel{color:#fff;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
-.b-contact{justify-content:space-between;box-shadow:none}
+.b-contact{grid-column:span 2;justify-content:flex-start;box-shadow:none}
+.b-contact > div:first-of-type{margin-top:auto}
+.b-contact .cmail{display:inline-block;margin-top:6px;color:rgba(255,255,255,.85);font-size:15px;text-decoration:none}
+.crow2{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px}
+.b-contact .cicon{width:42px;height:42px;border-radius:13px}.b-contact .cicon svg{width:20px;height:20px}
+.b-contact .ccall{height:42px;padding:0 18px;margin-left:auto}
+.b-contact .cicon{background:rgba(0,0,0,.22);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);color:#fff}
 .b-contact::before{content:"";position:absolute;inset:-35%;z-index:-1;filter:blur(30px);animation:cflow 14s ease-in-out infinite alternate;
   background:radial-gradient(40% 40% at 22% 28%,#7fe0ff,transparent 70%),radial-gradient(42% 42% at 80% 18%,#b48cff,transparent 70%),
     radial-gradient(50% 50% at 72% 78%,#0094C6,transparent 70%),radial-gradient(45% 45% at 18% 86%,#ff8fd6,transparent 70%),#2b46ff}
 .b-contact .tag{background:rgba(255,255,255,.22)}
-.b-contact h3{font-size:26px;color:#fff}
+.b-contact h3{font-size:clamp(18px,2.8vh,24px);line-height:1.2;color:#fff}
 @media (max-width:900px){
-  .about-panel .bento{grid-template-columns:repeat(2,minmax(0,1fr));padding:80px 16px 120px;gap:12px}
-  .b-profile,.b-work{grid-column:span 2}.b-profile{grid-row:auto}
+  .about-panel .bento{height:auto;grid-template-rows:none;grid-template-columns:repeat(2,minmax(0,1fr));padding:80px 16px 120px;gap:12px}
+  .b-profile,.b-work,.b-tools,.b-contact{grid-column:span 2}.b-profile{grid-row:auto}
 }
 
 /* project viewer */
@@ -190,7 +219,7 @@ button.bx{cursor:pointer}button.bx:hover{box-shadow:inset 0 0 0 1px var(--brand)
 /* reels: one column, tall player and its info on top, suggestions below (the viewer scrolls) */
 .viewer.vertical{grid-template-columns:var(--mw);grid-auto-rows:max-content;align-content:start;overflow-y:auto}
 /* the reel page scrolls under the top bar: fade it out behind the name and Back */
-:root.vertical-view .top.in::before{content:"";position:fixed;left:0;right:0;top:0;height:96px;background:linear-gradient(#000 55%,rgba(0,0,0,0));z-index:-1;pointer-events:none}
+body:has(.panel.open) .top::before,:root.vertical-view .top.in::before{content:"";position:fixed;left:0;right:0;top:0;height:96px;background:linear-gradient(#000 55%,rgba(0,0,0,0));z-index:-1;pointer-events:none}
 .viewer.vertical .vside{margin-top:12px;overflow:visible}
 .sarrow{display:none}
 /* reels: one row of 3 suggestions, arrows scroll to the next 3 */
@@ -347,21 +376,34 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches && location.hash.len
 <section class="panel about-panel" id="p-about"><div class="bento">
   <div class="bx b-profile">
     <div class="who"><img src="images/avatar.jpg" alt="Sudeep Mannava"><div><b>Sudeep Mannava</b><small>Motion Designer</small></div></div>
-    <p class="pitch">Motion designer crafting launch films, product walkthroughs and AI video ads for SaaS teams and brands.</p>
-    <span class="avail"><i></i>Available for new projects</span>
+    <div class="pitchbox">
+      <p class="pitch">I turn complex software into launch films people actually watch.</p>
+      <p class="sub">Motion design and AI video for SaaS startups and brands. Clear stories, premium polish and fast turnarounds, from script to final render.</p>
+    </div>
+    <!-- Testimonial: fill in a real client quote, then remove the hidden attribute -->
+    <figure class="quote" hidden>
+      <blockquote>CLIENT QUOTE</blockquote>
+      <figcaption>Name, Role at Company</figcaption>
+    </figure>
+    <div class="pfoot">
+      <span class="avail"><i></i>Available for new projects</span>
+    </div>
   </div>
-  <div class="bx"><span class="tag">Experience</span><div><h3>2+ yrs</h3><small>Product design and motion</small></div></div>
-  <div class="bx"><span class="tag">Location</span><div><h3>India</h3><small>Working remotely, GMT+5:30</small></div></div>
-  <button class="bx b-work" data-go="work"><span class="tag">Work</span><img class="peek" src="videos/covers/reel-1.jpg" alt=""><div><h3>Selected works</h3><small>Product launches, SaaS motion, AI video</small></div></button>
-  <div class="bx"><span class="tag">Tools</span><div><h3>What I work with</h3><div class="tools"><span>After Effects</span><span>Premiere Pro</span><span>Blender</span><span>Figma</span><span>AI video</span></div></div></div>
-  <div class="bx"><span class="tag">Elsewhere</span><div class="elsewhere">
+  <div class="bx"><span class="tag"><svg viewBox="0 0 16 16"><rect x="2" y="5" width="12" height="9" rx="2"/><path d="M6 5V3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5V5M2 9h12"/></svg>Experience</span><div><h3>3+ yrs</h3><small>Launch films and product motion for SaaS, fintech and health tech</small></div></div>
+  <div class="bx"><span class="tag"><svg viewBox="0 0 16 16"><path d="M8 14.5s5-4.3 5-8.2a5 5 0 0 0-10 0c0 3.9 5 8.2 5 8.2z"/><circle cx="8" cy="6.3" r="1.8"/></svg>Location</span><div><h3>India</h3><small>Working with teams worldwide, GMT+5:30</small></div></div>
+  <button class="bx b-work" data-go="work"><span class="tag"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1.2"/><rect x="9" y="2" width="5" height="5" rx="1.2"/><rect x="2" y="9" width="5" height="5" rx="1.2"/><rect x="9" y="9" width="5" height="5" rx="1.2"/></svg>Work</span><img class="peek" src="videos/covers/reel-1.jpg" alt=""><div><h3>Selected works</h3><small>Launch films, product walkthroughs and AI ads that convert</small></div></button>
+  <div class="bx b-tools"><span class="tag"><svg viewBox="0 0 16 16"><path d="M10.5 2.2a3.3 3.3 0 0 0-3.9 4.4L2.4 10.8a1.4 1.4 0 0 0 2 2l4.2-4.2a3.3 3.3 0 0 0 4.4-3.9l-2 2-1.8-.4-.4-1.8z"/></svg>Tools</span><div><h3>What I work with</h3><small>Industry standard motion and 3D tools, plus the latest AI video models.</small>
+    <div class="marquee" aria-label="After Effects, Premiere Pro, Illustrator, Photoshop, Blender, Cinema 4D, DaVinci Resolve, Figma, Framer, Claude, OpenAI, Lovable, Bolt"><div class="track"><span class="tl"><img src="images/tools/aftereffects.svg" alt=""><em>After Effects</em></span><span class="tl"><img src="images/tools/premiere.svg" alt=""><em>Premiere Pro</em></span><span class="tl"><img src="images/tools/illustrator.svg" alt=""><em>Illustrator</em></span><span class="tl"><img src="images/tools/photoshop.svg" alt=""><em>Photoshop</em></span><span class="tl"><img src="images/tools/blender.svg" alt=""><em>Blender</em></span><span class="tl"><img src="images/tools/cinema4d.svg" alt=""><em>Cinema 4D</em></span><span class="tl"><img src="images/tools/davinci.svg" alt=""><em>DaVinci Resolve</em></span><span class="tl"><img src="images/tools/figma.svg" alt=""><em>Figma</em></span><span class="tl"><img src="images/tools/framer.svg" alt=""><em>Framer</em></span><span class="tl"><img src="images/tools/claude.svg" alt=""><em>Claude</em></span><span class="tl"><img src="images/tools/openai.svg" alt=""><em>OpenAI</em></span><span class="tl"><img src="images/tools/lovable.svg" alt=""><em>Lovable</em></span><span class="tl"><img src="images/tools/bolt.svg" alt=""><em>Bolt</em></span><span class="tl" aria-hidden="true"><img src="images/tools/aftereffects.svg" alt=""><em>After Effects</em></span><span class="tl" aria-hidden="true"><img src="images/tools/premiere.svg" alt=""><em>Premiere Pro</em></span><span class="tl" aria-hidden="true"><img src="images/tools/illustrator.svg" alt=""><em>Illustrator</em></span><span class="tl" aria-hidden="true"><img src="images/tools/photoshop.svg" alt=""><em>Photoshop</em></span><span class="tl" aria-hidden="true"><img src="images/tools/blender.svg" alt=""><em>Blender</em></span><span class="tl" aria-hidden="true"><img src="images/tools/cinema4d.svg" alt=""><em>Cinema 4D</em></span><span class="tl" aria-hidden="true"><img src="images/tools/davinci.svg" alt=""><em>DaVinci Resolve</em></span><span class="tl" aria-hidden="true"><img src="images/tools/figma.svg" alt=""><em>Figma</em></span><span class="tl" aria-hidden="true"><img src="images/tools/framer.svg" alt=""><em>Framer</em></span><span class="tl" aria-hidden="true"><img src="images/tools/claude.svg" alt=""><em>Claude</em></span><span class="tl" aria-hidden="true"><img src="images/tools/openai.svg" alt=""><em>OpenAI</em></span><span class="tl" aria-hidden="true"><img src="images/tools/lovable.svg" alt=""><em>Lovable</em></span><span class="tl" aria-hidden="true"><img src="images/tools/bolt.svg" alt=""><em>Bolt</em></span></div></div></div></div>
+  <div class="bx b-contact"><span class="tag"><svg viewBox="0 0 16 16"><rect x="1.5" y="3" width="13" height="10" rx="2"/><path d="M2 4.5l6 4.5 6-4.5"/></svg>Contact</span>
+    <div><h3>Let's make your next launch unmissable</h3><a class="cmail" href="mailto:nagasaisudeep@gmail.com">nagasaisudeep@gmail.com</a></div>
+    <div class="crow2">
+
     <a class="cicon c-in" href="https://www.linkedin.com/in/sudeep-mannava-49bb0a256/" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 9h3v11h-3zM6 3.5a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6zM10 9h2.9v1.5h.1c.4-.8 1.4-1.7 3-1.7 3.2 0 3.8 2.1 3.8 4.8V20h-3v-5.6c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V20h-3z"/></svg></a>
     <a class="cicon c-wa" href="https://wa.me/917989193704" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20l1.2-3.8A8 8 0 1 1 8 19z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 1c-1-.4-2.6-2-3-3l1-1-1-2z" fill="currentColor" stroke="none"/></svg></a>
     <a class="cicon c-mail" href="mailto:nagasaisudeep@gmail.com" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></svg></a>
-    <a class="cicon c-reel" href="reels.html" aria-label="Reels"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="3" width="7" height="18" rx="2"/><rect x="13" y="3" width="7" height="18" rx="2"/></svg></a>
-  </div></div>
-  <div class="bx"><span class="tag">About</span><div><h3>The story so far</h3><small>Two years turning complex software into short films people actually watch, now mixing motion design with AI video.</small></div></div>
-  <button class="bx b-contact" data-go="contact"><span class="tag">Contact</span><h3>Let's work together</h3></button>
+      <a class="ccall" href="mailto:nagasaisudeep@gmail.com?subject=Let%27s%20arrange%20a%20call">Arrange a call</a>
+    </div>
+  </div>
 </div></section>
 
 <section class="panel" id="p-services"><div class="in">
@@ -463,7 +505,7 @@ const srcBox = document.getElementById('src');
 const WALL = CLIPS.map((c, i) => c.reel ? -1 : i).filter(i => i >= 0);
 const vids = CLIPS.map(p => {
   const v = document.createElement('video');
-  Object.assign(v, { src: `videos/previews/${p.preview}.mp4`, muted: true, loop: true, playsInline: true, preload: p.reel ? 'none' : 'auto' });
+  Object.assign(v, { src: `videos/previews/${p.preview}.mp4`, muted: true, loop: true, playsInline: true, preload: 'none' });   // nothing downloads until its tile is on screen (the frame loop plays visible ones)
   srcBox.appendChild(v);
   return v;
 });
@@ -704,6 +746,24 @@ btns.forEach(b => b.onclick = () => {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('open')); btns.forEach(x => x.classList.remove('on'));
   if (!was && b.dataset.p !== 'work') { document.getElementById(id).classList.add('open'); b.classList.add('on'); }
 });
+// tools row: drifts on its own, pauses on hover, and can be dragged, swiped or wheeled; loops seamlessly
+(() => {
+  const m = document.querySelector('.marquee'); if (!m) return;
+  let hover = false, drag = false, lx = 0;
+  const loop = () => { const half = m.scrollWidth / 2; if (m.scrollLeft >= half) m.scrollLeft -= half; else if (m.scrollLeft <= 0) m.scrollLeft += half; };
+  m.addEventListener('pointerenter', () => hover = true);
+  m.addEventListener('pointerleave', () => { hover = false; drag = false; m.classList.remove('drag'); });
+  m.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') return; drag = true; lx = e.clientX; m.classList.add('drag'); });
+  addEventListener('pointerup', () => { drag = false; m.classList.remove('drag'); });
+  m.addEventListener('pointermove', e => { if (!drag) return; m.scrollLeft -= e.clientX - lx; lx = e.clientX; loop(); });
+  m.addEventListener('wheel', e => { e.preventDefault(); e.stopPropagation(); m.scrollLeft += e.deltaX || e.deltaY; loop(); }, { passive: false });
+  m.addEventListener('scroll', loop, { passive: true });
+  let acc = 0;
+  (function tick() {
+    if (!hover && document.getElementById('p-about').classList.contains('open')) { acc += .5; if (acc >= 1) { m.scrollLeft += Math.floor(acc); acc %= 1; loop(); } }
+    requestAnimationFrame(tick);
+  })();
+})();
 document.querySelectorAll('.bx[data-go]').forEach(b => b.onclick = () => document.querySelector(`.dock [data-p="${b.dataset.go}"]`).click());
 document.getElementById('p-about').addEventListener('click', e => { if (e.target.classList.contains('bento') || e.target.id === 'p-about') document.querySelector('.dock [data-p="about"]').click(); });
 document.getElementById('p-contact').addEventListener('click', e => { if (e.target.classList.contains('cwrap') || e.target.id === 'p-contact') document.querySelector('.dock [data-p="contact"]').click(); });
