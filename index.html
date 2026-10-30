@@ -222,9 +222,10 @@ button.bx{cursor:pointer}button.bx:hover{box-shadow:inset 0 0 0 1px var(--brand)
 
 /* project viewer */
 :root{--side:clamp(320px,28vw,420px);--mw:min(calc(100vw - 116px - var(--side)),calc((100vh - 470px) * 16 / 9));--edge:max(24px,calc((100vw - var(--mw) - var(--side) - 36px) / 2))}
-.viewer{position:fixed;inset:0;z-index:40;background:#000;display:grid;grid-template-columns:var(--mw) var(--side);justify-content:center;align-content:center;gap:36px;padding:120px 40px 100px;opacity:0;pointer-events:none;transition:opacity .35s,background .55s}
+.viewer{position:fixed;inset:0;z-index:40;background:#000;display:grid;grid-template-columns:var(--mw) var(--side);justify-content:center;align-content:safe center;grid-auto-rows:max-content;overflow-y:auto;gap:36px;padding:120px 40px 100px;opacity:0;pointer-events:none;transition:opacity .35s,background .55s}
 .viewer.open{opacity:1;pointer-events:auto}
 .vmain{display:flex;flex-direction:column;min-width:0;min-height:0}
+.vmain>*{flex-shrink:0}   /* never squash the player; a tall column (the deck) scrolls the viewer instead */
 .frame{position:relative;width:100%;aspect-ratio:16/9;border-radius:38px;overflow:hidden;background:#0d0d0d;transform-origin:0 0;
   box-shadow:0 0 0 1px rgba(255,255,255,.25),0 30px 80px rgba(0,0,0,.7)}
 .frame video{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
@@ -233,6 +234,8 @@ button.bx{cursor:pointer}button.bx:hover{box-shadow:inset 0 0 0 1px var(--brand)
 .viewer.vertical{grid-template-columns:var(--mw);grid-auto-rows:max-content;align-content:start;overflow-y:auto}
 /* the reel page scrolls under the top bar: fade it out behind the name and Back */
 body:has(.panel.open) .top::before,:root.vertical-view .top.in::before{content:"";position:fixed;left:0;right:0;top:0;height:96px;background:linear-gradient(#000 55%,rgba(0,0,0,0));z-index:-1;pointer-events:none}
+/* inside the player the page scrolls under the header, so the header gets a solid black bar */
+.top.in::before{content:"";position:fixed;left:0;right:0;top:0;height:92px;background:linear-gradient(#000 80px,rgba(0,0,0,0));z-index:-1;pointer-events:none}
 .viewer.vertical .vside{margin-top:12px;overflow:visible}
 .sarrow{display:none}
 /* reels: one row of 3 suggestions, arrows scroll to the next 3 */
@@ -289,6 +292,29 @@ body:has(.panel.open) .top::before,:root.vertical-view .top.in::before{content:"
 .av.dark{background:#141414;box-shadow:0 0 0 1px var(--line)}
 .av.mono{background:radial-gradient(circle at 30% 25%,#4fa3ff,#0a5bd8 60%,#062f73)}
 .ch b em{font-style:normal}
+.deck{margin-top:14px;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;scroll-behavior:smooth}
+.deck::-webkit-scrollbar{display:none}
+.deckwrap{position:relative;margin-top:14px}
+.deckwrap[hidden],.deckbox[hidden]{display:none}
+.deckwrap .deck{margin-top:0}
+/* round arrows and a full screen button over the slide strip */
+.dk{position:absolute;z-index:3;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:rgba(20,20,20,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:0 0 0 1px rgba(255,255,255,.18);color:#fff;transition:background .2s,opacity .2s}
+.dk:hover{background:var(--brand)}
+.dk svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.dk:disabled{opacity:0;pointer-events:none}
+.deckwrap .prev,.deckwrap .next{top:50%;transform:translateY(-50%)}
+.deckwrap .prev{left:10px}.deckwrap .next{right:10px}
+.deckwrap .full{top:10px;right:10px;width:36px;height:36px}
+/* full screen slide viewer */
+.deckbox{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.94);display:grid;place-items:center;padding:64px 80px}
+.deckbox img{max-width:100%;max-height:100%;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.deckbox .prev,.deckbox .next{top:50%;transform:translateY(-50%);width:52px;height:52px}
+.deckbox .prev{left:16px}.deckbox .next{right:16px}
+.deckbox .close{top:16px;right:16px}
+.dcount{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-size:13px;color:#bbb;font-variant-numeric:tabular-nums}
+@media (max-width:640px){.deckbox{padding:56px 12px}.deckbox .prev,.deckbox .next{top:auto;bottom:12px;transform:none;width:44px;height:44px}.dcount{bottom:26px}}
+.deck img{flex:none;width:clamp(200px,24vw,300px);aspect-ratio:16/9;border-radius:12px;object-fit:cover;background:#111;scroll-snap-align:start;box-shadow:0 0 0 1px rgba(255,255,255,.12);user-select:none;-webkit-user-drag:none;cursor:zoom-in}
 .vdesc{margin-top:16px;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.07);color:#d6d6d6;font-size:15px;line-height:1.55;max-width:100%}
 .ch b{display:flex;align-items:center;gap:6px;font-size:17px;font-weight:600;white-space:nowrap}
 .ch b svg{width:15px;height:15px;flex:none}
@@ -344,13 +370,13 @@ body:has(.panel.open) .top::before,:root.vertical-view .top.in::before{content:"
   .viewer{grid-template-columns:minmax(0,1fr);justify-content:stretch;padding:130px 16px 110px;overflow:auto;align-content:start;gap:28px}
   .ctrl{padding:40px 16px 12px}.bar{margin-bottom:8px}.crow{gap:8px}.crow .time{font-size:13px}
   .frame,.vinfo{width:100%}.frame{border-radius:24px}
-  .viewer{grid-auto-rows:max-content}.vmain>*{flex-shrink:0}   /* rows as tall as their content, so the player and its info never squash into the suggestions */
   .viewer.vertical{grid-template-columns:minmax(0,1fr)}
   .viewer.vertical .vmain{display:flex;flex-direction:column;align-items:stretch;gap:0}
   .viewer.vertical .vinfo{display:block}.viewer.vertical .vrow{display:flex}.viewer.vertical .acts{display:flex}
   .viewer.vertical .vt{max-width:none;font-size:20px}.viewer.vertical .ch{margin-bottom:0}
   .viewer.vertical .frame{height:auto;width:min(100%,calc((100vh - 260px) * 9 / 16));margin:0 auto;align-self:center}
   .viewer.vertical .vinfo{margin-top:22px}
+  .deck img{width:78%}
   .vt{font-size:20px}.vrow{flex-wrap:wrap;gap:12px}.acts{margin-left:0}.vdesc{font-size:14px}
   .vside{margin-top:0;overflow:visible;min-width:0}
 }
@@ -453,6 +479,7 @@ body:has(.panel.open) .top::before,:root.vertical-view .top.in::before{content:"
 </div></section>
 
 <div class="toast" id="toast"></div>
+<div class="deckbox" hidden role="dialog" aria-label="Slides"><img alt=""><button class="dk prev" aria-label="Previous slide"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><button class="dk next" aria-label="Next slide"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button><button class="dk close" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button><span class="dcount"></span></div>
 <div class="viewer" id="vw">
   <div class="vmain">
     <div class="frame glass">
@@ -479,6 +506,7 @@ body:has(.panel.open) .top::before,:root.vertical-view .top.in::before{content:"
         </div>
       </div>
       <p class="vdesc"></p>
+      <div class="deckwrap" hidden><div class="deck"></div><button class="dk prev" aria-label="Previous slide"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><button class="dk next" aria-label="Next slide"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button><button class="dk full" aria-label="View slides full screen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>
     </div>
   </div>
   <aside class="vside"><div class="chips"><button class="on" data-f="All">All</button><button data-f="AI Videos">AI Videos</button><button data-f="SaaS Motion Graphics">SaaS Motion Graphics</button></div><div class="sugg"></div><button class="sarrow prev" aria-label="Previous videos"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><button class="sarrow next" aria-label="More videos"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></aside>
@@ -495,7 +523,8 @@ const PROJECTS = [
     desc: 'Testing was supposed to protect the business. Instead, it slowed every release down. This launch film introduces AionQ, an AI quality platform that cuts weeks of testing per release and stops bugs before they reach customers.' },
   { title: 'Paytm Postpaid', sub: 'TV commercial', src: 'paytm-postpaid', length: '0:42', clips: [1, 8, 15, 22, 29, 36],
     tags: ['AI Videos'], long: 'Paytm Postpaid Commercial', company: 'Paytm', logo: 'logos/paytm-icon.png',
-    desc: 'Board now. Billed later. A cinematic ad for Paytm Postpaid, the buy now pay later credit line that lets people pay for travel, bills and shopping today and settle up next month.' },
+    desc: 'Board now. Billed later. A cinematic ad for Paytm Postpaid, the buy now pay later credit line that lets people pay for travel, bills and shopping today and settle up next month.',
+    deck: { dir: 'images/paytm-deck', slides: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15] } },   // slide 14 (about me) left out   // pitch deck slides shown under the description
   { title: 'NeuroTerminal', sub: 'Product walkthrough', src: 'neuroterminal', length: '1:00', clips: [1, 11.6, 22.1, 32.7, 43.2, 53.8],
     tags: ['SaaS Motion Graphics'], long: 'NeuroTerminal Product Walkthrough', company: 'NeuroDiscovery AI', logo: 'logos/neurodiscovery-icon.svg',
     desc: 'A guided tour of NeuroTerminal by NeuroDiscovery AI. Ask a research question in plain English and it builds a structured patient cohort from millions of anonymised neurology patient journeys, for clinical trials, real world evidence and medical affairs.' },
@@ -671,6 +700,9 @@ function openProject(i, fromEl) {
   lv.src = `videos/${p.src}.mp4`; lv.currentTime = p.start; lv.play().catch(() => {});
   vw.querySelector('.vt').textContent = p.long; vw.querySelector('.cname').textContent = p.company;
   vw.querySelector('.vsub').textContent = p.sub; vw.querySelector('.vdesc').textContent = p.desc;
+  const deck = vw.querySelector('.deck'); deck.parentElement.hidden = !p.deck;
+  deck.innerHTML = p.deck ? p.deck.slides.map((n, k) => `<img src="${p.deck.dir}/p${String(n).padStart(2, '0')}.jpg" alt="${p.company} deck slide ${k + 1}" loading="lazy" decoding="async">`).join('') : '';
+  requestAnimationFrame(() => deck.scrollLeft = 0);   // always start at the first slide
   const av = vw.querySelector('.av'); av.className = 'av' + (p.mono ? ' mono' : p.logo.endsWith('neurodiscovery-icon.svg') ? ' dark' : '');   // logos sit on white
   av.innerHTML = p.mono ? p.mono : `<img src="${p.logo}" alt="${p.company} logo">`;
   if (!wasOpen || location.hash.slice(1) !== slug(p.long)) history.replaceState(null, '', '#' + slug(p.long));
@@ -755,6 +787,30 @@ acts.querySelector('.share').onclick = async () => {
   if (navigator.share) { try { await navigator.share({ title: CLIPS[curClip].long, url }); return; } catch {} }
   try { await navigator.clipboard.writeText(url); toast('Link copied'); } catch { toast(url); }
 };
+// deck slides: wheel and arrows scroll the strip; the full screen button opens a slide viewer
+(() => {
+  const wrap = document.querySelector('.deckwrap'), d = wrap.querySelector('.deck'), box = document.querySelector('.deckbox'), big = box.querySelector('img');
+  const step = () => (d.firstElementChild?.offsetWidth || 300) + 12;
+  const sync = () => { wrap.querySelector('.prev').disabled = d.scrollLeft < 4; wrap.querySelector('.next').disabled = d.scrollLeft > d.scrollWidth - d.clientWidth - 4; };
+  d.addEventListener('scroll', sync, { passive: true }); new MutationObserver(() => requestAnimationFrame(sync)).observe(d, { childList: true });
+  d.addEventListener('wheel', e => { if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return; e.preventDefault(); d.scrollBy({ left: e.deltaY }); }, { passive: false });
+  wrap.querySelector('.prev').onclick = () => d.scrollBy({ left: -step(), behavior: 'smooth' });
+  wrap.querySelector('.next').onclick = () => d.scrollBy({ left: step(), behavior: 'smooth' });
+  let cur = 0;
+  const imgs = () => [...d.querySelectorAll('img')];
+  // full screen loads the sharper copy from full/
+  const show = k => { const a = imgs(); cur = (k + a.length) % a.length; big.src = a[cur].src.replace(/\/(p\d+\.jpg)$/, '/full/$1'); big.alt = a[cur].alt; box.querySelector('.dcount').textContent = `${cur + 1} / ${a.length}`; };
+  const open = k => { show(k); box.hidden = false; };
+  const close = () => { box.hidden = true; d.scrollTo({ left: imgs()[cur].offsetLeft - d.offsetLeft, behavior: 'smooth' }); };
+  // full screen starts on the slide at the left of the strip; tapping a slide opens that one
+  wrap.querySelector('.full').onclick = () => open(Math.round(d.scrollLeft / step()));
+  d.addEventListener('click', e => { const i = imgs().indexOf(e.target); if (i >= 0) open(i); });
+  box.querySelector('.prev').onclick = () => show(cur - 1); box.querySelector('.next').onclick = () => show(cur + 1);
+  box.querySelector('.close').onclick = close; box.onclick = e => { if (e.target === box) close(); };
+  addEventListener('keydown', e => { if (box.hidden) return; if (e.key === 'ArrowLeft') show(cur - 1); else if (e.key === 'ArrowRight') show(cur + 1); else if (e.key === 'Escape') { e.stopImmediatePropagation(); close(); } }, true);
+  let sx = 0; box.addEventListener('touchstart', e => sx = e.touches[0].clientX, { passive: true });
+  box.addEventListener('touchend', e => { const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 50) show(cur + (dx < 0 ? 1 : -1)); });
+})();
 const toastEl = document.getElementById('toast'); let toastT;
 // phone and mail icons copy their number or address
 document.querySelectorAll('.c-copy,.c-clip').forEach(el => el.addEventListener('click', async e => {
