@@ -344,10 +344,12 @@ body:has(.panel.open) .top::before,:root.vertical-view .top.in::before{content:"
   .viewer{grid-template-columns:minmax(0,1fr);justify-content:stretch;padding:130px 16px 110px;overflow:auto;align-content:start;gap:28px}
   .ctrl{padding:40px 16px 12px}.bar{margin-bottom:8px}.crow{gap:8px}.crow .time{font-size:13px}
   .frame,.vinfo{width:100%}.frame{border-radius:24px}
+  .viewer{grid-auto-rows:max-content}.vmain>*{flex-shrink:0}   /* rows as tall as their content, so the player and its info never squash into the suggestions */
+  .viewer.vertical{grid-template-columns:minmax(0,1fr)}
   .viewer.vertical .vmain{display:flex;flex-direction:column;align-items:stretch;gap:0}
   .viewer.vertical .vinfo{display:block}.viewer.vertical .vrow{display:flex}.viewer.vertical .acts{display:flex}
   .viewer.vertical .vt{max-width:none;font-size:20px}.viewer.vertical .ch{margin-bottom:0}
-  .viewer.vertical .frame{height:auto;width:min(100%,calc((100vh - 260px) * 9 / 16));margin:0 auto}
+  .viewer.vertical .frame{height:auto;width:min(100%,calc((100vh - 260px) * 9 / 16));margin:0 auto;align-self:center}
   .viewer.vertical .vinfo{margin-top:22px}
   .vt{font-size:20px}.vrow{flex-wrap:wrap;gap:12px}.acts{margin-left:0}.vdesc{font-size:14px}
   .vside{margin-top:0;overflow:visible;min-width:0}
